@@ -3419,6 +3419,8 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     saveState();
     term.innerHTML = "";
     promptEl.textContent = promptText();
+    renderPhasePill();
+    try{ renderHeaderSub(); }catch(e){}
     renderLocation();
     renderObjectives();
     renderRewards();
