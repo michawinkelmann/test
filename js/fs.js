@@ -289,6 +289,39 @@
       extra:"ls · cat mikroskop.txt · cat pflanzen_lore.txt · talk <name>" },
   };
 
+  const PHASE_COMMANDS = {
+    1: [
+      { cmd:"ls", desc:"Ordner anzeigen" },
+      { cmd:"cat", desc:"Dateien lesen" },
+      { cmd:"cd", desc:"Ort wechseln" },
+      { cmd:"help", desc:"Freigeschaltete Commands sehen" },
+    ],
+    2: [
+      { cmd:"grep", desc:"Texte filtern" },
+      { cmd:"mkdir", desc:"Ordner anlegen" },
+      { cmd:"cp", desc:"Dateien kopieren" },
+      { cmd:"quests", desc:"Ziele checken" },
+    ],
+    3: [
+      { cmd:"find", desc:"Dateien finden" },
+      { cmd:"grep -n", desc:"Zeilen anzeigen" },
+      { cmd:"chmod +x", desc:"Scripte ausführbar machen" },
+      { cmd:"./<script>", desc:"Boss-Run starten" },
+    ],
+    4: [
+      { cmd:"ps/top", desc:"Prozesse prüfen" },
+      { cmd:"kill", desc:"Problemprozess stoppen" },
+      { cmd:"history", desc:"Verlauf ansehen" },
+      { cmd:"alias", desc:"Shortcuts bauen" },
+    ],
+    5: [
+      { cmd:"cd /arbeitsamt", desc:"Real-Life Hub öffnen" },
+      { cmd:"talk <name>", desc:"Gespräche starten" },
+      { cmd:"cp", desc:"Dateien für Jobs sichern" },
+      { cmd:"chmod", desc:"Rechte prüfen/setzen" },
+    ],
+  };
+
   function locationPath(){
     let p = state.cwd;
     while(p.length>1 && !LOC[p]){
@@ -321,6 +354,8 @@
     el("locExtra").textContent = dyn ? (extra ? (extra + "  ·  " + dyn) : dyn) : extra;
     el("locImg").src = svgData(loc.name, loc.tag, loc.mood);
 
+    renderPhaseCommands();
+
     const npcsHere = Object.entries(NPCS)
       .filter(([id,n])=>n.at.includes(lp))
       .map(([id,n])=>`${n.name}`);
@@ -329,6 +364,23 @@
       row("Tipp: Hier sind NPCs. Du kannst mit ihnen reden: talk <name> 😌", "p");
       state.npcTipShown = true;
       saveState();
+    }
+  }
+
+  function renderPhaseCommands(){
+    const list = el("phaseCommandsList");
+    const title = el("phaseCommandsTitle");
+    if(!list || !title) return;
+
+    const phase = Number(state.phase) || 1;
+    const cmds = PHASE_COMMANDS[phase] || PHASE_COMMANDS[1];
+    title.textContent = `Wichtige Befehle (Phase ${phase})`;
+
+    list.innerHTML = "";
+    for(const item of cmds){
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="kbd">${escapeHtml(item.cmd)}</span>${escapeHtml(item.desc)}`;
+      list.appendChild(li);
     }
   }
 

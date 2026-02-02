@@ -114,6 +114,31 @@
     .desc{ margin:0; line-height:1.45; font-size:14px; }
     .inlineList{ margin:8px 0 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
     .small{ margin:10px 0 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
+    .phaseCommands{
+      margin-top:12px;
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background: rgba(0,0,0,.12);
+    }
+    .phaseCommandsHeader{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .phaseCommandsList{
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .phaseCommandsHint{ margin-top:8px; }
     .objectives{ display:flex; flex-direction:column; gap:10px; }
     .obj{
       border:1px solid var(--line);
