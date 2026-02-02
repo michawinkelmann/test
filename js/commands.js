@@ -1095,7 +1095,7 @@ Tipp: quests zeigt dir die Quest-Keys in [eckigen Klammern].` };
         if(state.phase===3) lines.push("Boss-Run: find → grep -n → cp → echo >> → chmod +x → ./patchlord.sh ...");
         if(state.phase===4) lines.push("Mentor-Arc: ps/top/kill · history · alias · mentor_clear");
         lines.push("");
-        lines.push("Mini: man <cmd> (z.B. man grep) | clear | reset");
+        lines.push("Mini Manual - Zeigt dir, wie die Befehle funktionieren: man <cmd> (z.B. man grep) | clear | reset");
         return { ok:true, out: lines.join("\n") };
       }
 
