@@ -1,271 +1,438 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-const scoreEl = document.getElementById("score");
-const livesEl = document.getElementById("lives");
-const levelEl = document.getElementById("level");
-const overlay = document.getElementById("overlay");
-const startBtn = document.getElementById("startBtn");
+const statusText = document.getElementById("statusText");
+const courageEl = document.getElementById("courage");
+const reputationEl = document.getElementById("reputation");
+const sceneTitle = document.getElementById("sceneTitle");
+const sceneText = document.getElementById("sceneText");
+const choicesEl = document.getElementById("choices");
+const inventoryEl = document.getElementById("inventory");
+const logEl = document.getElementById("log");
+const restartBtn = document.getElementById("restartBtn");
 
 const state = {
-  running: false,
-  score: 0,
-  lives: 3,
-  level: 1,
-  multiplier: 1,
-  lastTime: 0,
-  items: [],
-  spawnTimer: 0,
-  windCooldown: 0,
+  courage: 3,
+  reputation: 0,
+  inventory: new Set(),
+  flags: {},
+  location: "intro",
 };
 
-const player = {
-  x: canvas.width / 2,
-  y: canvas.height - 60,
-  radius: 18,
-  speed: 340,
-  velocity: 0,
-  windBoost: 0,
+const scenes = {
+  intro: {
+    title: "Projektwoche: Afterglow",
+    text:
+      "Die Flure der KGS Schwarmstedt sind leer, dein Handy leuchtet wie ein kleines Lagerfeuer. " +
+      "Du hast nachmittags noch am Projekt gebaut, jetzt ist die Haustür verriegelt. " +
+      "Du hörst das Summen der Reinigungsmaschine – jemand ist noch da. Was machst du?",
+    choices: [
+      { label: "Aula checken (vielleicht liegt da noch der Generalschlüssel?)", target: "aula" },
+      { label: "Lehrerzimmer anpeilen – risky, aber da hängen Pläne", target: "lehrerzimmer" },
+      { label: "Zur Sporthalle schleichen, da gibt's Notausgänge", target: "sporthalle" },
+    ],
+  },
+  aula: {
+    title: "Aula: Echo & Projektplakate",
+    text:
+      "Die Aula ist ein Meme-Archiv aus Projektplakaten. Zwischen Bühne und Technikpult blinkt eine Lampe. " +
+      "Auf einem Infoboard hängt die aktuelle Schulordnung. Ein Schatten huscht über den Bühnenvorhang.",
+    choices: [
+      {
+        label: "Schulordnung einstecken (kann später schützen)",
+        target: "aula",
+        effect: () => addItem("Schulordnung"),
+        once: "gotRules",
+      },
+      {
+        label: "Technikpult durchsuchen",
+        target: "technik",
+      },
+      {
+        label: "Jemanden ansprechen: \"Hallo? Wer ist da?\"",
+        target: "reinigung",
+      },
+      {
+        label: "Zurück in den Flur",
+        target: "flur",
+      },
+    ],
+  },
+  technik: {
+    title: "Technikpult: Licht & Sound",
+    text:
+      "Du findest ein altes Funkgerät der Veranstaltungstechnik. Vielleicht hört die Schulleitung mit? " +
+      "Und hey, die Tür zur Bühne ist angelehnt.",
+    choices: [
+      {
+        label: "Funkgerät einpacken",
+        target: "technik",
+        effect: () => addItem("Funkgerät"),
+        once: "gotRadio",
+      },
+      {
+        label: "Bühne hochklettern und umsehen",
+        target: "buehne",
+      },
+      {
+        label: "Zurück in die Aula",
+        target: "aula",
+      },
+    ],
+  },
+  buehne: {
+    title: "Bühne: Spotlight",
+    text:
+      "Auf der Bühne liegt ein Fundstück: ein Laminat-Ausweis mit dem Logo der KGS. " +
+      "Dazu ein Zettel: \"Hausmeisterdienst – Notausgänge prüfen\".",
+    choices: [
+      {
+        label: "Ausweis nehmen",
+        target: "buehne",
+        effect: () => addItem("Hausmeister-Ausweis"),
+        once: "gotBadge",
+      },
+      {
+        label: "Ausweis liegen lassen, nicht so deep gehen",
+        target: "aula",
+        effect: () => addReputation(1),
+      },
+      {
+        label: "Zurück in die Aula",
+        target: "aula",
+      },
+    ],
+  },
+  reinigung: {
+    title: "Reinigungsteam: Nachtschicht",
+    text:
+      "Eine freundliche Reinigungskraft winkt. \"Ihr seid doch von der Projektwoche?\" " +
+      "Sie kennt die Regeln und möchte keinen Ärger. Vielleicht kannst du sie überzeugen, dich rauszulassen.",
+    choices: [
+      {
+        label: "Projekt zeigen und erklären, warum du drin bist",
+        target: "reinigung",
+        effect: () => addReputation(1),
+        once: "talkedCleaning",
+      },
+      {
+        label: "Nach dem Hausmeister fragen",
+        target: "hausmeister",
+      },
+      {
+        label: "Zurück in die Aula",
+        target: "aula",
+      },
+    ],
+  },
+  lehrerzimmer: {
+    title: "Lehrerzimmer: Der heilige Raum",
+    text:
+      "Du schleichst rein. Auf dem Tisch liegen Vertretungspläne und ein Schlüsselbrett. " +
+      "Eine Notiz: \"Bitte den Schlüssel für den Hintereingang bei der Schulleitung abholen.\"",
+    choices: [
+      {
+        label: "Vertretungsplan fotografieren",
+        target: "lehrerzimmer",
+        effect: () => addItem("Vertretungsplan"),
+        once: "gotPlan",
+      },
+      {
+        label: "Schlüsselbrett checken",
+        target: "schluesselbrett",
+      },
+      {
+        label: "Zurück in den Flur",
+        target: "flur",
+      },
+    ],
+  },
+  schluesselbrett: {
+    title: "Schlüsselbrett: Fast Jackpot",
+    text:
+      "Die meisten Schlüssel sind weg. Übrig ist nur ein alter Spindschlüssel mit der Aufschrift \"A-Gang\". " +
+      "Vielleicht gibt's dort was?",
+    choices: [
+      {
+        label: "Spindschlüssel nehmen",
+        target: "schluesselfund",
+        effect: () => addItem("Spindschlüssel"),
+        once: "gotLockerKey",
+      },
+      {
+        label: "Nicht anfassen, sonst Stress",
+        target: "lehrerzimmer",
+        effect: () => addReputation(1),
+      },
+    ],
+  },
+  schluesselfund: {
+    title: "A-Gang: Spind-Quest",
+    text:
+      "Der A-Gang ist still. Du findest den Spind mit dem passenden Schloss. Darin: eine Warnweste und ein Plan vom Schulgelände.",
+    choices: [
+      {
+        label: "Warnweste anziehen (sieht offiziell aus)",
+        target: "schluesselfund",
+        effect: () => addItem("Warnweste"),
+        once: "gotVest",
+      },
+      {
+        label: "Geländeplan nehmen",
+        target: "schluesselfund",
+        effect: () => addItem("Geländeplan"),
+        once: "gotMap",
+      },
+      {
+        label: "Zurück in den Flur",
+        target: "flur",
+      },
+    ],
+  },
+  sporthalle: {
+    title: "Sporthalle: Hallenlicht & Echo",
+    text:
+      "Die Sporthalle riecht nach Gummi und Turnbeutel. Der Notausgang ist da, aber abgeschlossen. " +
+      "An der Wand hängt ein Schild: \"Notausgang nur mit Hausmeister-Freigabe\".",
+    choices: [
+      {
+        label: "Mit Hausmeister-Ausweis versuchen",
+        target: "notausgang",
+        requires: ["Hausmeister-Ausweis"],
+      },
+      {
+        label: "Mit Schulordnung argumentieren, dass du raus musst",
+        target: "notausgang",
+        requires: ["Schulordnung"],
+      },
+      {
+        label: "Leise zurück in den Flur",
+        target: "flur",
+      },
+    ],
+  },
+  notausgang: {
+    title: "Notausgang: Entscheidung",
+    text:
+      "Du stehst vor der Tür. Wenn du jetzt rausgehst, endet das Abenteuer. " +
+      "Bist du bereit?",
+    choices: [
+      {
+        label: "Tür öffnen und raus in die Nacht",
+        target: "ending_escape",
+      },
+      {
+        label: "Zurück – ich will noch die Schulleitung finden",
+        target: "flur",
+      },
+    ],
+  },
+  hausmeister: {
+    title: "Hausmeister-Story",
+    text:
+      "Die Reinigungskraft erzählt, der Hausmeister checkt gerade den Hintereingang. " +
+      "Wenn du ihn findest und deinen Fall sauber erklärst, lässt er dich vielleicht raus.",
+    choices: [
+      {
+        label: "Zum Hintereingang schleichen",
+        target: "hintereingang",
+      },
+      {
+        label: "Erst mehr Infos im Sekretariat holen",
+        target: "sekretariat",
+      },
+      {
+        label: "Zurück in die Aula",
+        target: "aula",
+      },
+    ],
+  },
+  sekretariat: {
+    title: "Sekretariat: Das Nervenlevel",
+    text:
+      "Im Sekretariat leuchtet noch ein Monitor. Ein Post-it: \"Notfallnummer Schulleitung im Handy\". " +
+      "Du siehst eine Liste mit Projektnamen und Teamleitungen.",
+    choices: [
+      {
+        label: "Notfallnummer ins Handy speichern",
+        target: "sekretariat",
+        effect: () => addItem("Notfallnummer"),
+        once: "gotNumber",
+      },
+      {
+        label: "Projektliste checken (für Argumente)",
+        target: "sekretariat",
+        effect: () => addItem("Projektliste"),
+        once: "gotProjects",
+      },
+      {
+        label: "Zum Hintereingang",
+        target: "hintereingang",
+      },
+    ],
+  },
+  hintereingang: {
+    title: "Hintereingang: Gespräch",
+    text:
+      "Der Hausmeister steht da, Werkzeugtasche in der Hand. \"Wer bist du und warum bist du noch hier?\"",
+    choices: [
+      {
+        label: "Ehrlich erklären + Projektliste zeigen",
+        target: "ending_official",
+        requires: ["Projektliste"],
+        effect: () => addReputation(2),
+      },
+      {
+        label: "Offiziell wirken mit Warnweste & Ausweis",
+        target: "ending_official",
+        requires: ["Warnweste", "Hausmeister-Ausweis"],
+        effect: () => addReputation(1),
+      },
+      {
+        label: "Ruf die Notfallnummer an",
+        target: "ending_call",
+        requires: ["Notfallnummer"],
+      },
+      {
+        label: "Zurück in den Flur",
+        target: "flur",
+      },
+    ],
+  },
+  flur: {
+    title: "Hauptflur: Nebel der Möglichkeiten",
+    text:
+      "Der Flur wirkt ewig. Links die Aula, rechts der A-Gang. Vorn das Lehrerzimmer, hinten die Sporthalle.",
+    choices: [
+      { label: "Zur Aula", target: "aula" },
+      { label: "Lehrerzimmer", target: "lehrerzimmer" },
+      { label: "Sporthalle", target: "sporthalle" },
+      { label: "Sekretariat", target: "sekretariat" },
+    ],
+  },
+  ending_escape: {
+    title: "Ending: Freigang",
+    text:
+      "Du schiebst die Tür auf, kalte Luft und Freiheit. Du hast es geschafft, ohne Drama. " +
+      "Morgen erzählst du die Story – vielleicht wird sie ein Running Gag der Projektwoche.",
+    choices: [{ label: "Nochmal spielen", target: "intro", reset: true }],
+  },
+  ending_official: {
+    title: "Ending: Offiziell entlassen",
+    text:
+      "Der Hausmeister nickt. \"Okay, wir machen das sauber.\" Er öffnet den Hintereingang. " +
+      "Du gehst mit erhobenem Kopf raus – Ruf +1.",
+    choices: [{ label: "Nochmal spielen", target: "intro", reset: true }],
+  },
+  ending_call: {
+    title: "Ending: Schulleitung am Telefon",
+    text:
+      "Die Schulleitung geht ran, etwas müde, aber verständnisvoll. " +
+      "Du bekommst eine offizielle Entlassung – und einen freundlichen Reminder für das nächste Mal.",
+    choices: [{ label: "Nochmal spielen", target: "intro", reset: true }],
+  },
 };
 
-const keys = {
-  left: false,
-  right: false,
-};
-
-const itemTypes = [
-  { kind: "star", color: "#ffd166", radius: 12, score: 10 },
-  { kind: "rock", color: "#7f8caa", radius: 16, score: -1 },
-  { kind: "gust", color: "#6ef3ff", radius: 14, score: 0 },
-];
-
-function resetGame() {
-  state.running = false;
-  state.score = 0;
-  state.lives = 3;
-  state.level = 1;
-  state.multiplier = 1;
-  state.items = [];
-  state.spawnTimer = 0;
-  state.windCooldown = 0;
-  player.x = canvas.width / 2;
-  player.velocity = 0;
-  player.windBoost = 0;
-  updateHud();
+function addItem(item) {
+  state.inventory.add(item);
+  log(`Item erhalten: ${item}`);
 }
 
-function updateHud() {
-  scoreEl.textContent = state.score.toString();
-  livesEl.textContent = state.lives.toString();
-  levelEl.textContent = state.level.toString();
+function addReputation(amount) {
+  state.reputation += amount;
+  log(`Ruf ${amount > 0 ? "+" : ""}${amount}`);
 }
 
-function startGame() {
-  resetGame();
-  state.running = true;
-  overlay.classList.add("hidden");
-  state.lastTime = performance.now();
-  requestAnimationFrame(loop);
+function adjustCourage(amount) {
+  state.courage += amount;
+  log(`Mut ${amount > 0 ? "+" : ""}${amount}`);
 }
 
-function endGame() {
-  state.running = false;
-  overlay.querySelector("h2").textContent = "Sturm vorbei!";
-  overlay.querySelector("p").innerHTML =
-    `Du hast <strong>${state.score}</strong> Punkte erreicht.\n    Drücke „Spiel starten“, um es noch einmal zu versuchen.`;
-  overlay.classList.remove("hidden");
+function log(message) {
+  const entry = document.createElement("li");
+  entry.textContent = message;
+  logEl.prepend(entry);
 }
 
-function spawnItem() {
-  const roll = Math.random();
-  let type = itemTypes[0];
-  if (roll > 0.7) type = itemTypes[1];
-  if (roll > 0.9) type = itemTypes[2];
+function updateStats() {
+  courageEl.textContent = state.courage;
+  reputationEl.textContent = state.reputation;
+  statusText.textContent = state.courage <= 1 ? "Nervös" : "Wachsam";
+}
 
-  state.items.push({
-    type,
-    x: 40 + Math.random() * (canvas.width - 80),
-    y: -30,
-    speed: 120 + Math.random() * 80 + state.level * 18,
-    wobble: Math.random() * Math.PI * 2,
+function renderInventory() {
+  inventoryEl.innerHTML = "";
+  if (state.inventory.size === 0) {
+    const li = document.createElement("li");
+    li.textContent = "Noch nix eingesackt.";
+    inventoryEl.appendChild(li);
+    return;
+  }
+  state.inventory.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    inventoryEl.appendChild(li);
   });
 }
 
-function updatePlayer(dt) {
-  const move = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
-  const targetVelocity = move * player.speed;
-  player.velocity += (targetVelocity - player.velocity) * Math.min(1, dt * 6);
-  player.x += (player.velocity + player.windBoost) * dt;
-  player.windBoost *= Math.max(0, 1 - dt * 3.5);
+function renderScene(id) {
+  const scene = scenes[id];
+  state.location = id;
+  sceneTitle.textContent = scene.title;
+  sceneText.textContent = scene.text;
+  choicesEl.innerHTML = "";
 
-  const padding = 24;
-  player.x = Math.max(padding, Math.min(canvas.width - padding, player.x));
-}
-
-function updateItems(dt) {
-  state.items.forEach((item) => {
-    item.y += item.speed * dt;
-    item.wobble += dt * 2;
-    item.x += Math.sin(item.wobble) * dt * 14;
-  });
-
-  state.items = state.items.filter((item) => item.y < canvas.height + 40);
-}
-
-function checkCollisions() {
-  state.items = state.items.filter((item) => {
-    const dx = item.x - player.x;
-    const dy = item.y - player.y;
-    const distance = Math.hypot(dx, dy);
-    if (distance < item.type.radius + player.radius) {
-      if (item.type.kind === "star") {
-        state.score += item.type.score * state.multiplier;
-        state.multiplier = Math.min(5, state.multiplier + 0.2);
-      }
-      if (item.type.kind === "rock") {
-        state.lives -= 1;
-        state.multiplier = 1;
-      }
-      if (item.type.kind === "gust") {
-        player.windBoost = 220 + state.level * 15;
-      }
-      updateHud();
-      return false;
+  scene.choices.forEach((choice) => {
+    if (choice.once && state.flags[choice.once]) {
+      return;
     }
-    return true;
-  });
 
-  if (state.lives <= 0) {
-    endGame();
-  }
-}
+    const button = document.createElement("button");
+    button.className = "choice";
+    button.textContent = choice.label;
 
-function updateLevel() {
-  const nextLevel = Math.floor(state.score / 120) + 1;
-  if (nextLevel !== state.level) {
-    state.level = nextLevel;
-    updateHud();
-  }
-}
-
-function updateSpawn(dt) {
-  const baseRate = Math.max(0.45, 1.3 - state.level * 0.08);
-  state.spawnTimer -= dt;
-  if (state.spawnTimer <= 0) {
-    spawnItem();
-    state.spawnTimer = baseRate;
-  }
-}
-
-function drawBackground() {
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, "rgba(39, 50, 86, 0.9)");
-  gradient.addColorStop(1, "rgba(10, 12, 24, 0.95)");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  for (let i = 0; i < 60; i += 1) {
-    const x = (i * 83) % canvas.width;
-    const y = (i * 137) % canvas.height;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-    ctx.fillRect(x, y, 2, 2);
-  }
-}
-
-function drawPlayer() {
-  ctx.save();
-  ctx.translate(player.x, player.y);
-  ctx.fillStyle = "#7b8bff";
-  ctx.beginPath();
-  ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "rgba(255,255,255,0.8)";
-  ctx.beginPath();
-  ctx.arc(-6, -6, 4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawItems() {
-  state.items.forEach((item) => {
-    ctx.beginPath();
-    ctx.fillStyle = item.type.color;
-    ctx.arc(item.x, item.y, item.type.radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    if (item.type.kind === "star") {
-      ctx.fillStyle = "rgba(255,255,255,0.6)";
-      ctx.beginPath();
-      ctx.arc(item.x + 3, item.y - 4, 3, 0, Math.PI * 2);
-      ctx.fill();
+    if (choice.requires) {
+      const hasAll = choice.requires.every((req) => state.inventory.has(req));
+      if (!hasAll) {
+        button.disabled = true;
+        button.textContent = `${choice.label} (fehlt: ${choice.requires.join(", ")})`;
+      }
     }
+
+    button.addEventListener("click", () => {
+      if (choice.reset) {
+        resetState();
+      }
+
+      if (choice.effect) {
+        choice.effect();
+      }
+
+      if (choice.once) {
+        state.flags[choice.once] = true;
+      }
+
+      if (choice.target) {
+        renderScene(choice.target);
+      }
+    });
+
+    choicesEl.appendChild(button);
   });
+
+  updateStats();
+  renderInventory();
 }
 
-function drawMultiplier() {
-  ctx.fillStyle = "rgba(255,255,255,0.7)";
-  ctx.font = "16px Inter, sans-serif";
-  ctx.fillText(`Multiplikator x${state.multiplier.toFixed(1)}`, 20, 30);
-  if (state.windCooldown > 0) {
-    ctx.fillStyle = "rgba(110, 243, 255, 0.7)";
-    ctx.fillText(`Windschub bereit in ${state.windCooldown.toFixed(1)}s`, 20, 52);
-  } else {
-    ctx.fillStyle = "rgba(110, 243, 255, 0.9)";
-    ctx.fillText("Windschub bereit! (Leertaste)", 20, 52);
-  }
+function resetState() {
+  state.courage = 3;
+  state.reputation = 0;
+  state.inventory = new Set();
+  state.flags = {};
+  logEl.innerHTML = "";
 }
 
-function loop(timestamp) {
-  if (!state.running) return;
-  const dt = Math.min(0.033, (timestamp - state.lastTime) / 1000);
-  state.lastTime = timestamp;
-
-  if (state.windCooldown > 0) {
-    state.windCooldown = Math.max(0, state.windCooldown - dt);
-  }
-
-  updatePlayer(dt);
-  updateItems(dt);
-  checkCollisions();
-  updateLevel();
-  updateSpawn(dt);
-
-  drawBackground();
-  drawItems();
-  drawPlayer();
-  drawMultiplier();
-
-  requestAnimationFrame(loop);
-}
-
-function triggerWind() {
-  if (state.windCooldown > 0 || !state.running) return;
-  player.windBoost += 260;
-  state.windCooldown = 4.5;
-}
-
-window.addEventListener("keydown", (event) => {
-  if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
-    keys.left = true;
-  }
-  if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
-    keys.right = true;
-  }
-  if (event.code === "Space") {
-    triggerWind();
-  }
+restartBtn.addEventListener("click", () => {
+  resetState();
+  renderScene("intro");
 });
 
-window.addEventListener("keyup", (event) => {
-  if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
-    keys.left = false;
-  }
-  if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
-    keys.right = false;
-  }
-});
-
-startBtn.addEventListener("click", startGame);
-
-resetGame();
+resetState();
+renderScene("intro");
