@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Windrunner: Sternenfang</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Idee #4</p>
+        <h1>Windrunner: Sternenfang</h1>
+        <p class="subtitle">
+          Sammle Sternkristalle, weiche Windsteinen aus und halte so lange wie möglich durch.
+        </p>
+      </div>
+      <div class="stats">
+        <div>
+          <span class="label">Punkte</span>
+          <span id="score" class="value">0</span>
+        </div>
+        <div>
+          <span class="label">Leben</span>
+          <span id="lives" class="value">3</span>
+        </div>
+        <div>
+          <span class="label">Level</span>
+          <span id="level" class="value">1</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="game-area">
+      <canvas id="gameCanvas" width="900" height="540" aria-label="Spielfeld"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="overlay-card">
+          <h2>Bereit für den Wind?</h2>
+          <p>
+            Bewege dich mit <strong>A/D</strong> oder den Pfeiltasten. Sammle Sterne,
+            meide Steine und nutze die Windstöße!
+          </p>
+          <button id="startBtn">Spiel starten</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div>
+        <h3>Steuerung</h3>
+        <ul>
+          <li><strong>A/D</strong> oder <strong>←/→</strong> bewegen</li>
+          <li><strong>Leertaste</strong> kurzer Windschub (Cooldown)</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Regeln</h3>
+        <ul>
+          <li>🌟 Sterne geben Punkte und bauen den Multiplikator auf.</li>
+          <li>🪨 Windsteine kosten ein Leben.</li>
+          <li>💨 Windschübe helfen, Lücken zu schließen.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Tipps</h3>
+        <ul>
+          <li>Bleibe in Bewegung, die Fallgeschwindigkeit steigt.</li>
+          <li>Nutze den Windschub, wenn mehrere Objekte fallen.</li>
+          <li>Maximiere deinen Multiplikator für hohe Scores.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
