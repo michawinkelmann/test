@@ -621,6 +621,101 @@ QUEST UPDATE:
     return { ok:true, out:"NOPE. Tokens falsch. Tip: inventory zeigt deine Fragmente." };
   }
 
+  function applyCheat1337(){
+    row(`${promptText()} 1337`, "p");
+    row("🎮 Cheatcode 1337 aktiviert: Teleport ans Ende von Phase 4.", "ok");
+
+    state.phase = 4;
+    state.cwd = "/school/sekretariat";
+
+    state.flags = Object.assign({}, state.flags, {
+      introSeen: true,
+      got_key: true,
+      opened_gate: true,
+      frag1: true,
+      frag2: true,
+      frag3: true,
+      reality_patch: true,
+      found_boss: true,
+      inspected_boss: true,
+      fixed_script: true,
+      exec_script: true,
+      escaped: true,
+      system_fixed: true,
+      report_given: true,
+      report_followup: true,
+      report_final: false
+    });
+
+    state.fragments = {
+      f1: state.fragments?.f1 || "PIXEL-SPAWN-42",
+      f2: state.fragments?.f2 || "CRAFTED-DIR-99",
+      f3: state.fragments?.f3 || "NEON-PIPE-7"
+    };
+
+    state.mentor = Object.assign({}, state.mentor, {
+      lag_fixed: true,
+      history_checked: true,
+      alias_made: true,
+      students_helped: 3,
+      clear_done: true
+    });
+
+    if(!state.sidequest) state.sidequest = {};
+    state.sidequest = Object.assign({}, state.sidequest, {
+      unlocked: true,
+      stage: 6,
+      found_lab: true,
+      parts: { lens: true, coil: true, ups: true },
+      net: { blueprint: true, shield: true },
+      traces: { gym: false, igs: false },
+      traceMeter: { gym: 0, igs: 0 },
+      badge: true
+    });
+
+    if(!state.badges) state.badges = [];
+    if(!state.badges.includes("Physica potestas est")) state.badges.push("Physica potestas est");
+
+    state.processes = [
+      { pid: 101, name: "terminald", cpu: 3, mem: 42 },
+      { pid: 202, name: "rgbd", cpu: 99, mem: 180 },
+      { pid: 303, name: "patchwatch", cpu: 5, mem: 65 },
+    ];
+
+    try{
+      const z = getNode("/school/sekretariat/zeugnis.txt");
+      if(z && z.type==="file"){
+        z.content = `ZEUGNIS-DRUCK (Status):
+✅ Online — Dienste wieder verfügbar
+
+Hinweis:
+Hol dein Zeugnis im Sekretariat ab:
+talk harries  /  talk pietsch`;
+      }
+      const score = getNode("/mentor_hub/arena2/score.txt");
+      if(score && score.type==="file"){
+        score.content = score.content
+          .replace("geholfene Leute: 0/3", "geholfene Leute: 3/3")
+          .replace("geholfene Leute: 1/3", "geholfene Leute: 3/3")
+          .replace("geholfene Leute: 2/3", "geholfene Leute: 3/3");
+      }
+    }catch(e){}
+
+    award("badge_patch");
+    award("badge_boss");
+    award("badge_sysadmin");
+    award("badge_history");
+    award("badge_alias");
+    award("badge_mentor");
+
+    saveState();
+    renderObjectives();
+    renderRewards();
+    renderLocation();
+    renderPhasePill();
+    try{ renderHeaderSub(); }catch(e){}
+  }
+
   function cmdImpl(line, stdin=null){
     const trimmed = line.trim();
     if(!trimmed) return { ok:true, out:"" };
@@ -3235,6 +3330,11 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     let trimmed = String(line||"").trim();
     if(!trimmed) return;
 
+    if(trimmed === "1337"){
+      applyCheat1337();
+      return;
+    }
+
     // alias expand (only first token)
     const firstTok = trimmed.split(/\s+/)[0];
     if(state.aliases && state.aliases[firstTok]){
@@ -3352,4 +3452,3 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     row("Oder direkt springen (absolute Pfade): cd /school", "muted");
 
       }
-
