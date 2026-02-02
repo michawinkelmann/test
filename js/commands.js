@@ -1265,9 +1265,7 @@ case "man":{
           state.phase = 5;
           state.flags.job_arc_started = true;
           if(!state.jobArc) state.jobArc = { active:false, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false }, startedAt:null };
-          state.jobArc.active = true;
           state.jobArc.stage = Math.max(0, state.jobArc.stage||0);
-          state.jobArc.startedAt = state.jobArc.startedAt || now();
           row("📎 Neuer Story-Arc unlocked: Phase 5 — Real Life.", "ok");
           row("Tipp: cat /arbeitsamt/start.txt  und dann talk beamter", "p");
         }
@@ -1561,6 +1559,7 @@ const maybeAppendRumor = () => {
 
           state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false }, startedAt: now() };
           state.jobArc.active = true;
+          state.jobArc.startedAt = state.jobArc.startedAt || now();
           state.flags.job_arc_started = true;
 
           const q = state.jobArc.quests || {};
