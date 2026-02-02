@@ -52,7 +52,8 @@ Alles andere ist wichtig. (Vielleicht.)“`
 
     "/school": { type:"dir", children:["flur.txt","mensa","pcraum","digitallab","sekretariat","beratung","bibliothek","turnhalle","hof","klassenraume","keller","physik","medienraum","technikraum","lehrerzimmer","veranstaltungsraum","ganztag","sv_buero","musikraum","kunstraum","chemie","biologie"] },
     "/school/mensa": { type:"dir", children:["menu.txt","quest.txt","vending_hint.txt"] },
-    "/school/pcraum": { type:"dir", children:["hint.txt","keycard.txt","glitchmap.txt"] },
+    "/school/pcraum": { type:"dir", children:["hint.txt","keycard.txt","glitchmap.txt","Schul-PC"] },
+    "/school/pcraum/Schul-PC": { type:"dir", children:["boot.txt","iserv-glitch.txt"] },
     "/school/digitallab": { type:"dir", children:["digitallab.txt","craft_hint.txt"] },
     "/school/sekretariat": { type:"dir", children:["sekretariat.txt","ticket.txt"] },
 
@@ -812,6 +813,10 @@ Automat ist 100% main character heute.`},
 - cd ..
 - cat <datei>
 
+Bonus-Lore:
+- ls Schul-PC
+- cat Schul-PC/iserv-glitch.txt
+
 Phase 2/3:
 - grep [-n] <pattern> <file>
 - grep: grep <pattern> <file>   (z.B. grep SIGNAL frag_3.pipe)
@@ -835,6 +840,27 @@ Bring sie zum /server_gate.
 
 Gerücht:
 Im DigitalLab hängt ein Mentor-NPC rum. talk semrau`},
+
+    "/school/pcraum/Schul-PC/boot.txt": { type:"file", content:
+`[BOOT/Schul-PC]
+> iServ-Client startet... ok
+> Sync-Thread: ERROR (checksum drift)
+> Anzeige: „Glitch detected“
+
+Ein alter Schul-PC wirkt, als wäre er halb im iServ‑Server „eingeloggt“.
+Die Pixel flackern wie kaputte Texturen.
+Vielleicht liegt hier der Ursprung vom iServ‑Glitch.`},
+
+    "/school/pcraum/Schul-PC/iserv-glitch.txt": { type:"file", content:
+`iSERV CORE DUMP (fragmentiert):
+>>> line 42: PATCHBAY-ROUTER??? [OK]
+>>> arena handshake: pending...
+>>> "Fragmente" erkannt: 3 Slots (F1, F2, F3)
+>>> BUGSIGNAL: "PATCHLORD" (phase 3?)  // keep eyes open
+
+Die Datei wirkt wie ein halb kaputter Logauszug.
+Du hast das Gefühl, der Glitch ist größer als der PC‑Raum.
+Vielleicht steckt hier der Weg in Phase 2 und 3.`},
 
     "/school/digitallab/digitallab.txt": { type:"file", content:
 `DigitalLab:
@@ -1955,7 +1981,7 @@ const NPCS = {
 const OBJECTIVES = [
     // Phase 1 — Tutorial
     { phase:1, title:"Tutorial starten", hint:"Lies zuerst die README. Da steht, was hier überhaupt abgeht.", done:(s)=>!!s.flags.introSeen },
-    { phase:1, title:"iServ-Glitch untersuchen", key:"iserv", hint:"In der Schule gibt’s einen Raum mit PCs… da ist der Ursprung vom Glitch ziemlich sus.", done:(s)=>!!s.flags.got_key },
+    { phase:1, title:"iServ-Glitch untersuchen", key:"iserv", hint:"In der Schule gibt’s einen Raum mit PCs… da ist der Ursprung vom Glitch ziemlich sus.", done:(s)=>!!s.flags.iserv_glitch },
     { phase:1, title:"KEYCARD besorgen", hint:"Irgendwo liegt ein Hinweis/Token, der nach ‚Zutritt‘ klingt. Schau dich in den PC-Ordnern um.", done:(s)=>!!s.flags.got_key },
     { phase:1, title:"Server-Gate öffnen", hint:"Am Gate brauchst du den richtigen Code. Wenn du ihn hast: einmal sauber eingeben.", done:(s)=>!!s.flags.opened_gate },
 
