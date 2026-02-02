@@ -630,6 +630,7 @@ QUEST UPDATE:
 
     state.flags = Object.assign({}, state.flags, {
       introSeen: true,
+      iserv_glitch: true,
       got_key: true,
       opened_gate: true,
       frag1: true,
@@ -1306,6 +1307,12 @@ case "man":{
             state.flags.got_key = true;
             award("badge_keycard");
             row("KEYCARD gelootet ✅", "ok");
+          }
+        }
+        if(path === "/school/pcraum/Schul-PC/iserv-glitch.txt"){
+          if(!state.flags.iserv_glitch){
+            state.flags.iserv_glitch = true;
+            row("iServ-Glitch untersucht ✅", "ok");
           }
         }
         if(path === "/home/player/workbench/patches/frag2.txt"){

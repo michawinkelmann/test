@@ -10,6 +10,7 @@
     flags: {
       booted:false,
       introSeen:false,
+      iserv_glitch:false,
       got_key:false,
       opened_gate:false,
       frag1:false,
@@ -153,4 +154,3 @@
 
     saveState();
   })();
-
