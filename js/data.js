@@ -2077,7 +2077,7 @@ const OBJECTIVES = [
     // Phase 2 — Quests / Fragmente
     { phase:2, title:"Fragment #1 sichern", hint:"In den Patch-Logs versteckt sich ein Token. Such nach einem eindeutigen Wort/Tag.", done:(s)=>!!s.flags.frag1 },
     { phase:2, title:"Fragment #2 craften", hint:"Du brauchst eine kleine ‚Werkbank‘ in deinem Home. Ordner + Datei = Loot-Slot.", done:(s)=>!!s.flags.frag2 },
-    { phase:2, title:"Fragment #3 aus Pipe-Stream ziehen", hint:"Da gibt’s eine Datei, die wie ein Datenstrom wirkt. Erst lesen, dann filtern.", done:(s)=>!!s.flags.frag3 },
+    { phase:2, title:"Fragment #3: Signal finden", hint:"Da gibt’s ein Signal in einer Datei. Such gezielt nach dem Signal und sichere das Fragment.", done:(s)=>!!s.flags.frag3 },
     { phase:2, title:"Reality-Patch zusammenbauen", hint:"Wenn du alle 3 Fragmente hast, kannst du sie zu einem Patch kombinieren.", done:(s)=>!!s.flags.reality_patch },
 
     // Phase 3 — Boss

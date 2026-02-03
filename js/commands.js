@@ -488,7 +488,9 @@ function allowedCommands(){
         row("FRAG1 gesnackt ✅ (PIXEL-SPAWN-42)", "ok");
       }
     }
-    if(state.phase >= 2 && pattern === "SIGNAL" && outText.includes("FRAG3=")){
+    const frag3Pattern = String(pattern || "").toLowerCase();
+    const frag3Output = String(outText || "").toLowerCase();
+    if(state.phase >= 2 && frag3Pattern === "signal" && frag3Output.includes("frag3=")){
       if(!state.flags.frag3){
         state.flags.frag3 = true;
         state.fragments.f3 = "NEON-PIPE-7";
@@ -832,6 +834,7 @@ talk harries  /  talk pietsch`;
             "Beispiele (nicht aus der Quest):",
             "  grep ERROR system.log        → alle Zeilen mit 'ERROR'",
             "  grep -n TODO notes.txt       → mit Zeilennummern (-n)",
+            "Optional: -i ignoriert Groß-/Kleinschreibung, Zusätze lassen sich kombinieren (z.B. -n -i).",
             "Workflow: Datei/Ort finden → dann grep <muster> <datei>."
           ],
           "frag2": [
@@ -844,11 +847,11 @@ talk harries  /  talk pietsch`;
             "Wenn mkdir meldet, dass es den Ordner schon gibt: okay – dann weiter mit touch/cat."
           ],
           "frag3": [
-            "Fragment #3 – Muster in Datei finden (grep, ohne Pipes)",
-            "Im Spiel: nutze grep direkt mit Datei (Pipes | sind hier nicht nötig/aktiv).",
+            "Fragment #3 – Muster in Datei finden (grep)",
             "Beispiele:",
             "  grep SIGNAL daten.txt",
             "  grep -n SIGNAL daten.txt",
+            "Optional: -i ignoriert Groß-/Kleinschreibung, Zusätze lassen sich kombinieren (z.B. -n -i).",
             "Wenn du das Muster kennst, aber nicht die Datei: erst ls / find verwenden."
           ],
           "assemble": [
