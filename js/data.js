@@ -310,7 +310,7 @@ Skill > Rechte.
     "/school/ganztag": { type:"dir", children:["ganztag.txt","zeiten.txt","angebote.txt","pinnwand.txt"] },
     "/school/sv_buero": { type:"dir", children:["sv_buero.txt","sv_info.txt","projektliste.txt","abstimmung.txt","rucksack","schrank"] },
     "/school/musikraum": { type:"dir", children:["musikraum.txt","instrumente.txt","setlist_krizelig.txt","notenstaender.txt"] },
-    "/school/kunstraum": { type:"dir", children:["kunstraum.txt","materialliste.txt","ausstellung.txt","kritzelwand.txt","schrank"] },
+    "/school/kunstraum": { type:"dir", children:["kunstraum.txt","materialliste.txt","ausstellung.txt","kritzelwand.txt","kacheln.txt","schrank"] },
     "/school/chemie": { type:"dir", children:["chemie.txt","protokolle","reaktionen.txt"] },
     "/school/biologie": { type:"dir", children:["biologie.txt","proben","mikroskop.txt","pflanzen_lore.txt"] },
 
@@ -557,6 +557,10 @@ Wenn du eins verschiebst, tauchen zwei neue auf.
 
 Manchmal werden Arbeiten bei Schulveranstaltungen ausgestellt.
 Wenn du genau hinschaust, entdeckst du sogar Bash‑Memes in Collagen.
+`},
+    "/school/kunstraum/kacheln.txt": { type:"file", content:
+`Kachel‑Notiz:
+FUGENMIX: STEINGRAU-7
 `},
 
     "/school/kunstraum/materialliste.txt": { type:"file", content:
@@ -1252,7 +1256,7 @@ Wenn du jemanden fragst, bekommst du meistens ... eine neue Aufgabe.
 `(leer)
 `},
 
-    "/real_life": { type:"dir", children:["snackmaster","ars_recycling","ohlendorf_technik","berndt_moebel","README.txt"] },
+    "/real_life": { type:"dir", children:["snackmaster","ars_recycling","ohlendorf_technik","berndt_moebel","cms","README.txt"] },
     "/real_life/README.txt": { type:"file", content:
 `REAL LIFE (Schwarmstedt & Umgebung)
 
@@ -1264,6 +1268,7 @@ Ordner:
 - ars_recycling
 - ohlendorf_technik
 - berndt_moebel
+- cms
 
 Tipp:
 Lies pro Firma: cat quest.txt  und sprich die Person dort an.
@@ -1296,7 +1301,7 @@ Dann: talk jansen
 `},
 
     // A-R-S Recycling
-    "/real_life/ars_recycling": { type:"dir", children:["quest.txt","docs","containerlist.txt"] },
+    "/real_life/ars_recycling": { type:"dir", children:["quest.txt","docs","containerlist.txt","platzplan.txt"] },
     "/real_life/ars_recycling/docs": { type:"dir", children:["abholplan_2026.csv","hinweis.txt"] },
     "/real_life/ars_recycling/quest.txt": { type:"file", content:
 `A‑R‑S Recycling — Auftrag
@@ -1318,6 +1323,14 @@ Wenn der Plan in deiner Workbench liegt: talk wiebe
 - Metall
 
 Wenn die Datei weg ist: alles Chaos.`},
+    "/real_life/ars_recycling/platzplan.txt": { type:"file", content:
+`Hofplan (Altbau):
+Stellplätze A-D = Container
+Stellplatz E = Materiallager
+
+Randnotiz:
+DACHCODE: RINNE-R3
+`},
     "/real_life/ars_recycling/docs/hinweis.txt": { type:"file", content:
 `Hinweis:
 Wenn kopieren nicht klappt, fehlt oft nur ein Ordner in deiner Workbench.
@@ -1372,6 +1385,69 @@ Wenn der Rechner hängt, hängt halt ... alles.
 Kleiner Tipp:
 Es gibt Commands, die dir laufende Prozesse zeigen.
 Wenn du die PID vom richtigen Übeltäter hast, kannst du ihn gezielt stoppen.`},
+
+    // CMS Handwerkerunternehmen
+    "/real_life/cms": { type:"dir", children:["quest.txt","leitstand","elektro","fliesen","dach","sanitaer","maler"] },
+    "/real_life/cms/quest.txt": { type:"file", content:
+`CMS — Auftrag (Multi‑Trade, höherer Schwierigkeitsgrad)
+
+Problem:
+CMS braucht eine digitale Abnahme‑Mappe pro Fachbereich.
+Der Arbeitsamt‑Beamte will sehen, dass du "echte" Dokumentation kannst.
+
+Dein Move:
+1) Lege in deiner Workbench die Struktur an:
+   ~/workbench/cms/{elektro,fliesen,dach,sanitaer,maler,abnahme}
+2) In JEDEM Fachbereich eine Datei erstellen und mit echo füllen:
+   elektro/bericht.txt   → Zeile mit dem Sicherungs‑Label
+   fliesen/bericht.txt   → Zeile mit dem Fugen‑Mix
+   dach/bericht.txt      → Zeile mit dem Dachcode
+   sanitaer/bericht.txt  → Zeile mit dem Rohr‑Check
+   maler/bericht.txt     → Zeile mit dem Farbcode
+3) In ~/workbench/cms/abnahme/uebersicht.txt ALLE Codes sammeln.
+
+Wichtig:
+Die Zeilen stehen NICHT hier, sondern in anderen Orten.
+Du musst sie vorher finden (cat/grep/find).
+
+Wenn alles fertig ist: talk holger
+`},
+    "/real_life/cms/leitstand": { type:"dir", children:["plan.txt"] },
+    "/real_life/cms/leitstand/plan.txt": { type:"file", content:
+`CMS Leitstand — Projektplan
+
+Fachbereiche: Elektro · Fliesen · Dach · Sanitär · Maler
+
+Hinweis:
+Jeder Bereich hat eine Referenz‑Datei an einem anderen Ort.
+Wenn du den Code hast, dokumentiere ihn sauber mit echo.
+`},
+    "/real_life/cms/elektro": { type:"dir", children:["auftrag.txt"] },
+    "/real_life/cms/elektro/auftrag.txt": { type:"file", content:
+`Elektro — Auftrag
+Finde das Sicherungs‑Label im Technikraum.
+Tipp: dort liegen Ersatzteile und ein Verteilerplan.
+Ziel: Zeile in ~/workbench/cms/elektro/bericht.txt`},
+    "/real_life/cms/fliesen": { type:"dir", children:["auftrag.txt"] },
+    "/real_life/cms/fliesen/auftrag.txt": { type:"file", content:
+`Fliesen — Auftrag
+Der Fugen‑Mix steht im Kunstraum bei den Kachel‑Notizen.
+Ziel: Zeile in ~/workbench/cms/fliesen/bericht.txt`},
+    "/real_life/cms/dach": { type:"dir", children:["auftrag.txt"] },
+    "/real_life/cms/dach/auftrag.txt": { type:"file", content:
+`Dach — Auftrag
+Der Dachcode ist irgendwo bei den Real‑Life‑Höfen abgelegt.
+Ziel: Zeile in ~/workbench/cms/dach/bericht.txt`},
+    "/real_life/cms/sanitaer": { type:"dir", children:["auftrag.txt"] },
+    "/real_life/cms/sanitaer/auftrag.txt": { type:"file", content:
+`Sanitär — Auftrag
+Rohrdruck‑Check im Physik‑Materialschrank.
+Ziel: Zeile in ~/workbench/cms/sanitaer/bericht.txt`},
+    "/real_life/cms/maler": { type:"dir", children:["auftrag.txt"] },
+    "/real_life/cms/maler/auftrag.txt": { type:"file", content:
+`Maler — Auftrag
+Der Farbcode liegt bei der Medienraum‑Ausleihe.
+Ziel: Zeile in ~/workbench/cms/maler/bericht.txt`},
 
     "/mentor_hub/logs/lag.log": { type:"file", content:
 `[tick 001] fps: 144
@@ -1677,7 +1753,7 @@ Wichtig:
 Wenn Logs rot sind: du warst nicht leise.
 `},
     "/school/physik": { type:"dir", children:["materialschrank"] },
-    "/school/physik/materialschrank": { type:"dir", children:["gyro_spule.part"] },
+    "/school/physik/materialschrank": { type:"dir", children:["gyro_spule.part","rohrdruck.txt"] },
 
     "/school/physik/materialschrank/gyro_spule.part": { type:"file", content:
 `GYRO-SPULE // Resonanz-Bauteil
@@ -1685,6 +1761,10 @@ Wenn Logs rot sind: du warst nicht leise.
 Sieht aus wie 'ne Spule, aber irgendwie… zu präzise.
 Beim Anfassen: minimales Kribbeln. Sus.
 (Wenn du sie mitnimmst: Dr. Winkelmann freut sich.)
+`},
+    "/school/physik/materialschrank/rohrdruck.txt": { type:"file", content:
+`Rohrdruck‑Check:
+ROHRCHECK: DRUCK-1.6BAR
 `},
     "/school/medienraum": { type:"dir", children:["beamer_kiste","kabelkiste","ausleihe"] },
     
@@ -1712,9 +1792,13 @@ Beim Anfassen: minimales Kribbeln. Sus.
     "/school/medienraum/kabelkiste/box_b/adapter/audio.txt": { type:"file", content:"(Klinke)\\n" },
     "/school/medienraum/kabelkiste/box_b/adapter/notiz.txt": { type:"file", content:"Wenn was fehlt: erst inventar.txt checken.\\n" },
 
-    "/school/medienraum/ausleihe": { type:"dir", children:["ausleihe_regeln.txt","formular.txt"] },
+    "/school/medienraum/ausleihe": { type:"dir", children:["ausleihe_regeln.txt","formular.txt","farbrolle.txt"] },
     "/school/medienraum/ausleihe/ausleihe_regeln.txt": { type:"file", content:"Regel #1: Namen lesbar.\nRegel #2: HDMI-Adapter #A17 bleibt im Haus.\n" },
     "/school/medienraum/ausleihe/formular.txt": { type:"file", content:"Name: ____  Gerät: ____  Datum: ____\\n" },
+    "/school/medienraum/ausleihe/farbrolle.txt": { type:"file", content:
+`Malerbedarf (für Projekte):
+FARBCODE: SAND-NEBEL-12
+`},
 "/school/medienraum/beamer_kiste": { type:"dir", children:["photon_linse.part"] },
 
     "/school/medienraum/beamer_kiste/photon_linse.part": { type:"file", content:
@@ -1724,13 +1808,17 @@ Eine Linse, die Licht bündelt wie Aim-Assist.
 Auf dem Rand: ein kleines 'W'.
 `},
     "/school/technikraum": { type:"dir", children:["ersatzteile"] },
-    "/school/technikraum/ersatzteile": { type:"dir", children:["usv_modul.part"] },
+    "/school/technikraum/ersatzteile": { type:"dir", children:["usv_modul.part","verteilerplan.txt"] },
 
     "/school/technikraum/ersatzteile/usv_modul.part": { type:"file", content:
 `USV-MODUL (Mini)
 
 Strom-Stabilisierung. Sieht langweilig aus,
 aber für Winkelmann ist das safe ein Zauberitem.
+`},
+    "/school/technikraum/ersatzteile/verteilerplan.txt": { type:"file", content:
+`Verteilerplan (Kurz):
+SICHERUNGSLABEL: CMS-EL-2048
 `},
     "/net": { type:"dir", children:["gym-ost-core","igs-edu-lab"] },
     "/net/gym-ost-core": { type:"dir", children:["home","var"] },
@@ -1899,6 +1987,7 @@ const NPCS = {
     wiebe: { name:"Frau Wiebe", role:"Disposition (A‑R‑S Recycling)", at:["/real_life/ars_recycling"] },
     neele: { name:"Neele", role:"Netzwerk‑Support (Ohlendorf‑Technik)", at:["/real_life/ohlendorf_technik"] },
     tom: { name:"Tom", role:"Schichtleitung (Arthur Berndt)", at:["/real_life/berndt_moebel"] },
+    holger: { name:"Holger Koch", role:"Geschäftsführer (CMS)", at:["/real_life/cms"] },
 
     biringer: { name:"Christian Biringer", role:"Sozialarbeit", at:["/school/beratung"] },
     jeske: { name:"Simona Jeske", role:"Beratung", at:["/school/beratung","/arena"] },
@@ -2017,6 +2106,7 @@ const OBJECTIVES = [
     { phase:5, title:"Job-Quest: A‑R‑S Recycling", key:"ars", hint:"Bei A‑R‑S liegt eine wichtige Datei irgendwo im Firmenordner. Bring sie in deine Workbench und melde dich bei Wiebe.", done:(s)=>!!(s.jobArc && s.jobArc.quests && s.jobArc.quests.ars) },
     { phase:5, title:"Job-Quest: Ohlendorf-Technik", key:"ohlendorf", hint:"Bei Ohlendorf klemmt’s an Zugriffsrechten. Hol dir das Ticket in die Workbench, prüf die Rechte und sprich dann Neele an.", done:(s)=>!!(s.jobArc && s.jobArc.quests && s.jobArc.quests.ohlendorf) },
     { phase:5, title:"Job-Quest: Möbelfabrik", key:"berndt", hint:"In der Möbelfabrik läuft etwas aus dem Ruder (CPU). Finde den Verursacher-Prozess und stoppe ihn, dann zu Tom.", done:(s)=>!!(s.jobArc && s.jobArc.quests && s.jobArc.quests.berndt) },
+    { phase:5, title:"Job-Quest: CMS Handwerk", key:"cms", hint:"CMS braucht eine Abnahme-Mappe für alle Fachbereiche. Sammle die Codes aus anderen Orten, dokumentiere sie in ~/workbench/cms und sprich dann Holger.", done:(s)=>!!(s.jobArc && s.jobArc.quests && s.jobArc.quests.cms) },
     { phase:5, title:"Abschluss: Jobangebot sichern", key:"jobangebot", hint:"Zurück zum Arbeitsamt: talk beamter", done:(s)=>!!(s.flags && s.flags.job_arc_done) },
 ];
 

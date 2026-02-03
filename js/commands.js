@@ -505,7 +505,7 @@ function allowedCommands(){
       const pp = String(pattern||"").toLowerCase();
       const oo = String(outText||"").toLowerCase();
       if(pp.includes("allergene") && oo.includes("ok:job_snackmaster")){
-        if(!state.jobArc) state.jobArc = { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false } };
+        if(!state.jobArc) state.jobArc = { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false } };
         state.jobArc.active = true;
         state.jobArc.quests = state.jobArc.quests || {};
         state.jobArc.quests.snackmaster = true;
@@ -1047,6 +1047,16 @@ talk harries  /  talk pietsch`;
             "  kill <PID>           → nur wenn du sicher bist",
             "Danach: talk tom."
           ],
+          "cms": [
+            "CMS – Multi-Trade Abnahme",
+            "Ziel: In ~/workbench/cms für alle Fachbereiche Dokumentation ablegen.",
+            "Hinweise:",
+            "  • Codes stehen NICHT bei CMS, sondern in anderen Orten.",
+            "  • Struktur anlegen: mkdir ~/workbench/cms/{elektro,fliesen,dach,sanitaer,maler,abnahme}",
+            "  • Dateien mit echo füllen: <bereich>/bericht.txt",
+            "  • In abnahme/uebersicht.txt alle Codes sammeln.",
+            "Danach: talk holger."
+          ],
           "jobangebot": [
             "Jobangebot – Abschluss",
             "Nach allen Firmen-Aufträgen musst du oft zum 'Hub' zurück und den Abschluss triggern.",
@@ -1073,7 +1083,7 @@ talk harries  /  talk pietsch`;
   help - report
   help - noah | emma | leo | mentor_clear
   help - arbeitsamt | beamter
-  help - snackmaster | ars | ohlendorf | berndt
+  help - snackmaster | ars | ohlendorf | berndt | cms
   help - jobangebot
 
 Tipp: quests zeigt dir die Quest-Keys in [eckigen Klammern].` };
@@ -1265,7 +1275,7 @@ case "man":{
         if(target === "/arbeitsamt" && state.flags && state.flags.job_arc_unlocked && state.phase < 5){
           state.phase = 5;
           state.flags.job_arc_started = true;
-          if(!state.jobArc) state.jobArc = { active:false, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false }, startedAt:null };
+          if(!state.jobArc) state.jobArc = { active:false, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false }, startedAt:null };
           state.jobArc.stage = Math.max(0, state.jobArc.stage||0);
           row("📎 Neuer Story-Arc unlocked: Phase 5 — Real Life.", "ok");
           row("Tipp: cat /arbeitsamt/start.txt  und dann talk beamter", "p");
@@ -1329,7 +1339,7 @@ case "man":{
         try{
           if(state.phase >= 5 && (path === "/home/player/workbench/ohlendorf/ticket_net.txt" || path === "/home/player/workbench/ticket_net.txt")){
             if(String(content||"").includes("JOB_OHLENDORF_OK")){
-              state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false } };
+              state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false } };
               state.jobArc.active = true;
               state.jobArc.quests = state.jobArc.quests || {};
               state.jobArc.quests.ohlendorf = true;
@@ -1564,13 +1574,13 @@ const maybeAppendRumor = () => {
             return { ok:true, out };
           }
 
-          state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false }, startedAt: now() };
+          state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false }, startedAt: now() };
           state.jobArc.active = true;
           state.jobArc.startedAt = state.jobArc.startedAt || now();
           state.flags.job_arc_started = true;
 
           const q = state.jobArc.quests || {};
-          const allDone = !!(q.snackmaster && q.ars && q.ohlendorf && q.berndt);
+          const allDone = !!(q.snackmaster && q.ars && q.ohlendorf && q.berndt && q.cms);
           if(allDone){
             if(!state.flags.job_arc_done){
               state.flags.job_arc_done = true;
@@ -1578,7 +1588,7 @@ const maybeAppendRumor = () => {
               try{
                 const jo = getNode("/arbeitsamt/jobangebot.txt");
                 if(jo && jo.type==="file"){
-                  jo.content = `JOBANGEBOT — FINAL\n\nBetreff: „Shell‑Allrounder*in (m/w/d)“\n\nDu hast:\n- Logs gescannt (grep)\n- Dateien gefunden (find)\n- Ordnung gebaut (mkdir/cp)\n- Rechte gefixt (chmod)\n- Prozesse gekillt (kill)\n\nKurz: Du kannst Probleme lösen.\n\nGlückwunsch. Du bist offiziell ready für Real Life.\n\n(Und ja: das war Phase 5. GG.)`;
+                  jo.content = `JOBANGEBOT — FINAL\n\nBetreff: „Shell‑Allrounder*in (m/w/d)“\n\nDu hast:\n- Logs gescannt (grep)\n- Dateien gefunden (find)\n- Ordnung gebaut (mkdir/cp)\n- Rechte gefixt (chmod)\n- Prozesse gekillt (kill)\n- Dokumentation erstellt (echo > file)\n\nKurz: Du kannst Probleme lösen.\n\nGlückwunsch. Du bist offiziell ready für Real Life.\n\n(Und ja: das war Phase 5. GG.)`;
                 }
               }catch(e){}
               award("badge_job");
@@ -1598,13 +1608,14 @@ const maybeAppendRumor = () => {
           else if(!q.ars) next = "ars_recycling";
           else if(!q.ohlendorf) next = "ohlendorf_technik";
           else if(!q.berndt) next = "berndt_moebel";
+          else if(!q.cms) next = "cms";
 
           out += `„Nummer gezogen? Egal."\n`;
           out += `„Du willst Arbeit? Ich hab Arbeit."\n\n`;
           out += `Deine nächste Station: /real_life/${next}\n`;
           out += `Geh hin: cd /real_life/${next}\n`;
           out += `Dann: cat quest.txt  und talk mit der Person dort.\n\n`;
-          out += `Status: SNACKMASTER ${q.snackmaster?"✅":"⏳"} · A‑R‑S ${q.ars?"✅":"⏳"} · Ohlendorf ${q.ohlendorf?"✅":"⏳"} · Berndt ${q.berndt?"✅":"⏳"}`;
+          out += `Status: SNACKMASTER ${q.snackmaster?"✅":"⏳"} · A‑R‑S ${q.ars?"✅":"⏳"} · Ohlendorf ${q.ohlendorf?"✅":"⏳"} · Berndt ${q.berndt?"✅":"⏳"} · CMS ${q.cms?"✅":"⏳"}`;
           saveState();
           renderObjectives();
           return { ok:true, out };
@@ -1624,7 +1635,7 @@ const maybeAppendRumor = () => {
               for(const p of paths){
                 const rf = readFileChecked(p);
                 if(rf.ok && String(rf.content||"").includes("JOB_OHLENDORF_OK")){
-                  state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false } };
+                  state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false } };
                   state.jobArc.active = true;
                   state.jobArc.quests = state.jobArc.quests || {};
                   state.jobArc.quests.ohlendorf = true;
@@ -1639,7 +1650,7 @@ const maybeAppendRumor = () => {
             const p2 = "/home/player/workbench/ars/abholplan_2026.csv";
             if(!q.ars && state.phase >= 5){
               if(getNode(p1)?.type==="file" || getNode(p2)?.type==="file"){
-                state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false } };
+                state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false } };
                 state.jobArc.active = true;
                 state.jobArc.quests = state.jobArc.quests || {};
                 state.jobArc.quests.ars = true;
@@ -1715,6 +1726,65 @@ const maybeAppendRumor = () => {
           out += `„Der Rechner hängt. Ich seh nur noch 2 FPS."\n`;
           out += `„Finde heraus, welcher Prozess alles ausbremst – und mach das Problem weg."\n\n`;
           out += `Tipp: Erst Prozessliste ansehen, dann den passenden Prozess gezielt stoppen.`;
+          saveState();
+          return { ok:true, out };
+        }
+
+        if(id==="holger"){
+          if(state.phase < 5){
+            out += `„Wir sind ein echter Betrieb. Komm wieder, wenn du im Real‑Life‑Teil bist."`;
+            saveState();
+            return { ok:true, out };
+          }
+          state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false }, startedAt: now() };
+          state.jobArc.active = true;
+          state.jobArc.quests = state.jobArc.quests || {};
+
+          const q = state.jobArc.quests;
+          if(q.cms){
+            out += `„Die Abnahme‑Mappe ist sauber. Genau so will ich das sehen."`;
+            out += `\n\n„Sag dem Arbeitsamt: CMS ist zufrieden."`;
+            saveState();
+            return { ok:true, out };
+          }
+
+          const requirements = [
+            { label:"Elektro", path:"/home/player/workbench/cms/elektro/bericht.txt", token:"SICHERUNGSLABEL: CMS-EL-2048" },
+            { label:"Fliesen", path:"/home/player/workbench/cms/fliesen/bericht.txt", token:"FUGENMIX: STEINGRAU-7" },
+            { label:"Dach", path:"/home/player/workbench/cms/dach/bericht.txt", token:"DACHCODE: RINNE-R3" },
+            { label:"Sanitär", path:"/home/player/workbench/cms/sanitaer/bericht.txt", token:"ROHRCHECK: DRUCK-1.6BAR" },
+            { label:"Maler", path:"/home/player/workbench/cms/maler/bericht.txt", token:"FARBCODE: SAND-NEBEL-12" }
+          ];
+          const missing = [];
+          for(const req of requirements){
+            const rf = readFileChecked(req.path);
+            if(!rf.ok || !String(rf.content||"").includes(req.token)){
+              missing.push(req.label);
+            }
+          }
+
+          const summaryPath = "/home/player/workbench/cms/abnahme/uebersicht.txt";
+          const summary = readFileChecked(summaryPath);
+          const summaryOk = summary.ok && requirements.every(req => String(summary.content||"").includes(req.token));
+
+          if(missing.length === 0 && summaryOk){
+            q.cms = true;
+            out += `„Okay. Alle Fachbereiche sauber dokumentiert. Das ist echte Abnahme‑Qualität."`;
+            out += `\n\n„Du hast dir die Empfehlung verdient. Ab zum Arbeitsamt."`;
+            saveState();
+            renderObjectives();
+            return { ok:true, out };
+          }
+
+          out += `„Ich seh noch Lücken. CMS ist groß — wir brauchen jeden Bereich."`;
+          out += `\n\nStatus:`;
+          for(const req of requirements){
+            const rf = readFileChecked(req.path);
+            const ok = rf.ok && String(rf.content||"").includes(req.token);
+            out += `\n- ${req.label}: ${ok ? "✅" : "⏳"}`;
+          }
+          out += `\n- Abnahme‑Übersicht: ${summaryOk ? "✅" : "⏳"}`;
+          out += `\n\nTipp: cat /real_life/cms/quest.txt`;
           saveState();
           return { ok:true, out };
         }
@@ -2704,7 +2774,7 @@ const outText = (extra + open).trim();
 
           // A-R-S: Plan in Workbench kopieren
           if(state.phase >= 5 && src === "/real_life/ars_recycling/docs/abholplan_2026.csv" && (dst === "/home/player/workbench/abholplan_2026.csv" || dst.startsWith("/home/player/workbench/ars/") || dst === "/home/player/workbench/ars/abholplan_2026.csv")){
-            state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false } };
+            state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false } };
             state.jobArc.active = true;
             state.jobArc.quests = state.jobArc.quests || {};
             state.jobArc.quests.ars = true;
@@ -2887,7 +2957,7 @@ const outText = (extra + open).trim();
 
         // Phase 5 — Job Quest: Berndt (cnc_sim)
         if(state.phase >= 5 && proc.name === "cnc_sim"){
-          state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false } };
+          state.jobArc = state.jobArc || { active:true, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false } };
           state.jobArc.active = true;
           state.jobArc.quests = state.jobArc.quests || {};
           state.jobArc.quests.berndt = true;
