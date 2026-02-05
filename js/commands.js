@@ -3485,6 +3485,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
         if(j === segments.length - 1){
           if(r.out) row(r.out);
         }
+        try{ if(window.checkTutorialCommand) window.checkTutorialCommand(segments[j]); }catch(e){}
         saveState();
         renderObjectives();
         renderLocation();
