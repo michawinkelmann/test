@@ -49,9 +49,11 @@
       <div class="terminal" id="term" aria-live="polite"></div>
       <div class="inputBar">
         <div class="prompt" id="prompt">player@SchwarmShell:~$</div>
-        <input id="cmd" type="text" autocomplete="off" spellcheck="false" placeholder='z.B. ls   oder   grep -n "wort" datei.txt   oder   find / -name "*.log"' />
-        <button class="btn" id="run">Run</button>
-        <button class="btn" id="reset">Reset</button>
+        <div class="inputControls">
+          <input id="cmd" type="text" autocomplete="off" spellcheck="false" placeholder='z.B. ls   oder   grep -n "wort" datei.txt   oder   find / -name "*.log"' />
+          <button class="btn" id="run">Run</button>
+          <button class="btn" id="reset">Reset</button>
+        </div>
       </div>
       <div class="footerTips">
         Shortcuts: <span class="kbd">Enter</span> ausführen · <span class="kbd">↑</span>/<span class="kbd">↓</span> Verlauf · <span class="kbd">Tab</span> Autocomplete (mini) ·

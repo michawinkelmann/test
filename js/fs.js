@@ -652,7 +652,7 @@ function shortenPromptPath(path, maxLen = 36){
 
     const prefix = path.startsWith("~") ? "~" : "/";
     const parts = path.replace(/^~\/?/, "").split("/").filter(Boolean);
-    if(parts.length <= 2) return path.slice(0, maxLen - 1) + "…";
+    if(parts.length <= 2) return `…${path.slice(-(maxLen - 1))}`;
 
     const tail = [];
     let tailLen = 0;
