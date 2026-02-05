@@ -22,7 +22,7 @@
     }
     header{
       padding:18px 18px 0 18px;
-      max-width:1220px;
+      max-width:1380px;
       margin:0 auto;
     }
     .brand{
@@ -193,6 +193,11 @@
     .terminalWrap{ display:flex; flex-direction:column; height: 700px; }
 
     .storyCard{ min-width:0; }
+    .storyCard .content{
+      min-height:700px;
+      display:flex;
+      flex-direction:column;
+    }
     .terminalCard{
       min-width:0;
       border-color: rgba(124,244,176,.45);
@@ -233,7 +238,7 @@
       overflow:auto;
       flex:1 1 auto;
     }
-    @media (max-width: 1020px){ .terminalWrap{height: 600px;} .mapCard .content{height:auto;} }
+    @media (max-width: 1020px){ .terminalWrap{height: 600px;} .mapCard .content{height:auto;} .storyCard .content{min-height:auto;} }
 
     .terminal{
       flex: 1 1 auto;
