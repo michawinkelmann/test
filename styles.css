@@ -10,6 +10,7 @@
       --line:#1f2b3b;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
       --radius:16px;
+      --top-card-height: 680px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
     }
@@ -198,14 +199,18 @@
     .reward > div{min-width:0; flex:1 1 auto;}
     .reward strong{display:block; font-size:13px; line-height:1.3;}
     .reward span{display:block; font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4; word-break:break-word;}
-    .terminalWrap{ display:flex; flex-direction:column; min-height: 620px; max-height: 700px; }
+    .terminalWrap{
+      display:flex;
+      flex-direction:column;
+      height: var(--top-card-height);
+    }
 
     .storyCard{
       min-width:0;
       grid-column: 1;
     }
     .storyCard .content{
-      min-height:620px;
+      height: var(--top-card-height);
       display:flex;
       flex-direction:column;
     }
@@ -234,7 +239,10 @@
       .rewardsCard,
       .objectivesCard{ grid-column: auto; }
     }
-    .mapCard .content{ min-height:620px; max-height:700px; display:flex; }
+    .mapCard .content{
+      height: var(--top-card-height);
+      display:flex;
+    }
     .mapTree{
       margin:0;
       width:100%;
@@ -250,7 +258,11 @@
       border-radius:12px;
       background: rgba(0,0,0,.26);
     }
-    @media (max-width: 1020px){ .terminalWrap{max-height:none;} .mapCard .content{min-height:auto; max-height:none;} .storyCard .content{min-height:auto;} }
+    @media (max-width: 1020px){
+      .terminalWrap{height:auto;}
+      .mapCard .content{height:auto;}
+      .storyCard .content{height:auto;}
+    }
 
     .terminal{
       flex: 1 1 auto;
