@@ -333,6 +333,69 @@
     }
     return LOC[p] ? p : "/home/player";
   }
+  function mapVisitedSet(){
+    if(!state.map) state.map = { visited: [] };
+    if(!Array.isArray(state.map.visited)) state.map.visited = [];
+    const out = new Set(state.map.visited.filter(Boolean));
+    if(!out.size) out.add("/home/player");
+    out.add(state.cwd || "/home/player");
+    let p = state.cwd || "/home/player";
+    while(p && p !== "/"){
+      out.add(p);
+      p = parentDir(p);
+    }
+    out.add("/");
+    const next = Array.from(out);
+    const prev = JSON.stringify(state.map.visited);
+    const cur = JSON.stringify(next);
+    state.map.visited = next;
+    if(prev !== cur) saveState();
+    return out;
+  }
+
+  function mapVisibleChildren(path, visited){
+    const kids = listDir(path) || [];
+    const out = [];
+    for(const child of kids){
+      const full = (path === "/" ? "" : path) + "/" + child;
+      const node = getNode(full);
+      if(!node || node.type !== "dir") continue;
+      const show = visited.has(full) || parentDir(state.cwd||"") === full || parentDir(full) === (state.cwd||"") || parentDir(state.cwd||"")===path || path===(state.cwd||"");
+      // Show known dirs plus immediate neighbors of current directory.
+      if(show || path === (state.cwd||"")) out.push(full);
+    }
+    out.sort((a,b)=>a.localeCompare(b, 'de'));
+    return out;
+  }
+
+  function buildMapLines(path, prefix, isLast, visited, lines){
+    const isCurrent = path === (state.cwd||"");
+    const base = path === "/" ? "/" : path.split("/").pop();
+    const marker = isCurrent ? " 📍" : "";
+    const connector = prefix ? (isLast ? "└── " : "├── ") : "";
+
+    const children = mapVisibleChildren(path, visited);
+    const hasHidden = ((listDir(path)||[]).some((name)=>{
+      const full = (path === "/" ? "" : path) + "/" + name;
+      const node = getNode(full);
+      return node?.type === "dir" && !children.includes(full);
+    }));
+    const suffix = hasHidden ? " …" : "";
+    lines.push(`${prefix}${connector}${base}${marker}${suffix}`);
+
+    const nextPrefix = prefix + (prefix ? (isLast ? "    " : "│   ") : "");
+    children.forEach((child, idx)=> buildMapLines(child, nextPrefix, idx === children.length - 1, visited, lines));
+  }
+
+  function renderWorldMap(){
+    const mapEl = document.getElementById("worldMapTree");
+    if(!mapEl) return;
+    const visited = mapVisitedSet();
+    const lines = [];
+    buildMapLines("/", "", true, visited, lines);
+    mapEl.textContent = lines.join("\n");
+  }
+
   function renderLocation(){
     if(state.cwd === "/school/keller/winkelmann_lab" && !state.sidequest.found_lab){
       state.sidequest.found_lab = true;
@@ -368,6 +431,7 @@
       state.npcTipShown = true;
       saveState();
     }
+    renderWorldMap();
   }
 
   function renderPhaseCommands(){
