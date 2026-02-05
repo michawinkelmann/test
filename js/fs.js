@@ -549,29 +549,40 @@
         <div><strong>${escapeHtml(r.name)}</strong><span>${escapeHtml(r.desc)}</span></div>`;
       wrap.appendChild(d);
     }
+  }
+
+  function renderSidequestPanel(){
+    const card = el("sidequestCard");
+    const wrap = el("sidequestPanel");
+    if(!card || !wrap) return;
+
+    wrap.innerHTML = "";
 
     // Sidequest UI (erst sichtbar, wenn freigeschaltet)
     // In Phase 5 (Arbeitsamt/Real-Life) verschwindet das wieder.
-    if(state.sidequest && state.sidequest.unlocked && state.phase < 5){
-      const t = state.sidequest.traces || { gym:false, igs:false };
-      const tm = state.sidequest.traceMeter || { gym:0, igs:0 };
-      const alarm = state.sidequest.alarm || { gym:false, igs:false };
+    const show = !!(state.sidequest && state.sidequest.found_lab && state.sidequest.unlocked && state.phase < 5);
+    card.hidden = !show;
+    if(!show) return;
 
-      const dot = (ok)=> `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle;background:${ok?"#3bd671":"#6b7280"};"></span>`;
-      const dotWarn = (ok)=> `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle;background:${ok?"#3bd671":"#ef4444"};"></span>`;
-      const bar = (v)=> {
-        const vv = Math.max(0, Math.min(100, v||0));
-        const col = (vv>=70) ? "#ef4444" : (vv>=30) ? "#f59e0b" : "#3bd671";
-        return `<div style="height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:4px 0 10px 0;">
-                  <div style="height:100%;width:${vv}%;background:${col};"></div>
-                </div>`;
-      };
+    const t = state.sidequest.traces || { gym:false, igs:false };
+    const tm = state.sidequest.traceMeter || { gym:0, igs:0 };
+    const alarm = state.sidequest.alarm || { gym:false, igs:false };
+
+    const dot = (ok)=> `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle;background:${ok?"#3bd671":"#6b7280"};"></span>`;
+    const dotWarn = (ok)=> `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle;background:${ok?"#3bd671":"#ef4444"};"></span>`;
+    const bar = (v)=> {
+      const vv = Math.max(0, Math.min(100, v||0));
+      const col = (vv>=70) ? "#ef4444" : (vv>=30) ? "#f59e0b" : "#3bd671";
+      return `<div style="height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:4px 0 10px 0;">
+                <div style="height:100%;width:${vv}%;background:${col};"></div>
+              </div>`;
+    };
 
       // TRACE oben (bessere Sichtbarkeit)
-      const traceCard = document.createElement("div");
-      traceCard.className = "reward";
-      traceCard.style.gridColumn = "1 / -1";
-      traceCard.innerHTML = `
+    const traceCard = document.createElement("div");
+    traceCard.className = "reward";
+    traceCard.style.gridColumn = "1 / -1";
+    traceCard.innerHTML = `
         <img alt="" src="${svgData("Trace","Hacknet-Style","terminal")}"/>
         <div style="width:100%">
           <strong>Trace‑Leiste (Hacknet)</strong>
@@ -588,20 +599,20 @@
 
           <div class="small" style="margin-top:10px;">Tipp: In SSH → <span class="kbd">logwipe</span> säubert host‑spezifisch. Im SUPER‑PC ohne SSH ist es ein Notfall‑Global‑Clean.</div>
         </div>`;
-      wrap.appendChild(traceCard);
+    wrap.appendChild(traceCard);
 
       // WORKBENCH darunter
-      const wb = document.createElement("div");
-      wb.className = "reward";
-      wb.style.gridColumn = "1 / -1";
+    const wb = document.createElement("div");
+    wb.className = "reward";
+    wb.style.gridColumn = "1 / -1";
 
-      const p = state.sidequest.parts || {};
-      const n = state.sidequest.net || {};
-      const has = (f)=>!!FS[`/home/player/workbench/${f}`];
-      const bOk = has("blueprint.dat") || !!n.blueprint;
-      const sOk = has("shield.key") || !!n.shield;
+    const p = state.sidequest.parts || {};
+    const n = state.sidequest.net || {};
+    const has = (f)=>!!FS[`/home/player/workbench/${f}`];
+    const bOk = has("blueprint.dat") || !!n.blueprint;
+    const sOk = has("shield.key") || !!n.shield;
 
-      wb.innerHTML = `
+    wb.innerHTML = `
         <img alt="" src="${svgData("Workbench","Artefakte & Teile","terminal")}"/>
         <div style="width:100%">
           <strong>Workbench</strong>
@@ -619,8 +630,7 @@
 
           <div class="small" style="margin-top:10px;">Tipp: <span class="kbd">talk winkelmann</span> → <span class="kbd">choose 4</span> (Status).</div>
         </div>`;
-      wrap.appendChild(wb);
-    }
+    wrap.appendChild(wb);
   }
 
   
@@ -636,9 +646,41 @@
     pill.textContent = "Phase: " + label;
   }
 
+function shortenPromptPath(path, maxLen = 52){
+    if(typeof path !== "string" || !path) return "~";
+    if(path.length <= maxLen) return path;
+
+    const isHome = path.startsWith("~");
+    const prefix = isHome ? "~" : "/";
+    const trimmed = isHome ? path.replace(/^~\/?/, "") : path.replace(/^\//, "");
+    const parts = trimmed.split("/").filter(Boolean);
+
+    // Sehr kurze Pfade: hinten zeigen, ohne den Start komplett zu verlieren.
+    if(parts.length <= 1) return `${prefix}…${path.slice(-(maxLen - 2))}`;
+
+    const firstSegment = parts[0];
+    const tail = [];
+    let used = prefix.length + 1 + firstSegment.length + 4; // "<prefix>/<first>/..."
+
+    for(let i = parts.length - 1; i >= 1; i--){
+      const seg = parts[i];
+      const extra = seg.length + 1; // "/" + segment
+      if(used + extra > maxLen) break;
+      tail.unshift(seg);
+      used += extra;
+    }
+
+    if(!tail.length){
+      return `${prefix}/${firstSegment}/...`;
+    }
+
+    return `${prefix}/${firstSegment}/.../${tail.join("/")}`;
+  }
+
 function promptText(){
-    const short = state.cwd.replace(/^\/home\/player/, "~");
-    return `player@SchwarmShell:${short}$`;
+    const cwd = (typeof state?.cwd === "string" && state.cwd) ? state.cwd : "/home/player";
+    const short = cwd.replace(/^\/home\/player/, "~");
+    return `player@SchwarmShell:${shortenPromptPath(short)}$`;
   }
 
   

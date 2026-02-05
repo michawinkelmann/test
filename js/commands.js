@@ -1278,6 +1278,10 @@ case "man":{
         if(target === "/arbeitsamt" && state.flags && state.flags.job_arc_unlocked && state.phase < 5){
           state.phase = 5;
           state.flags.job_arc_started = true;
+          if(state.sidequest){
+            state.sidequest.unlocked = false;
+            state.sidequest.found_lab = false;
+          }
           if(!state.jobArc) state.jobArc = { active:false, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false }, startedAt:null };
           state.jobArc.stage = Math.max(0, state.jobArc.stage||0);
           row("📎 Neuer Story-Arc unlocked: Phase 5 — Real Life.", "ok");
@@ -1301,6 +1305,7 @@ case "man":{
         try{ renderHeaderSub(); }catch(e){}
         renderObjectives();
         renderRewards();
+        renderSidequestPanel();
         return { ok:true, out:"" };
       }
 
@@ -3485,6 +3490,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
         renderLocation();
         progressPhaseIfReady();
         renderRewards();
+        renderSidequestPanel();
         renderHeader();
       }
       lastOk = ok;
@@ -3504,6 +3510,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     renderLocation();
     renderObjectives();
     renderRewards();
+    renderSidequestPanel();
     if(withMessage){
       row("Hard reset. Neustart…", "warn");
       intro();

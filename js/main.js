@@ -4,6 +4,7 @@
     renderLocation();
     renderObjectives();
     renderRewards();
+    renderSidequestPanel();
     renderPhasePill();
 
     // Header-Text: ab Phase 5 anderer Vibe (andere Phasen bleiben unverändert)
@@ -98,6 +99,7 @@ function commitUI(opts={}){
   try{ if(o.loc) renderLocation(); }catch(e){}
   try{ if(o.obj) renderObjectives(); }catch(e){}
   try{ if(o.rewards) renderRewards(); }catch(e){}
+  try{ if(o.rewards) renderSidequestPanel(); }catch(e){}
 
   // Return currently allowed commands (useful for debugging / tests)
   try{
@@ -208,6 +210,7 @@ boot();
 
               saveState();
               renderRewards();
+              renderSidequestPanel();
             }
           }
         }catch(e){}

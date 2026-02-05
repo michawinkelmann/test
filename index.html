@@ -49,9 +49,11 @@
       <div class="terminal" id="term" aria-live="polite"></div>
       <div class="inputBar">
         <div class="prompt" id="prompt">player@SchwarmShell:~$</div>
-        <input id="cmd" type="text" autocomplete="off" spellcheck="false" placeholder='z.B. ls   oder   grep -n "wort" datei.txt   oder   find / -name "*.log"' />
-        <button class="btn" id="run">Run</button>
-        <button class="btn" id="reset">Reset</button>
+        <div class="inputControls">
+          <input id="cmd" type="text" autocomplete="off" spellcheck="false" placeholder='z.B. ls   oder   grep -n "wort" datei.txt   oder   find / -name "*.log"' />
+          <button class="btn" id="run">Run</button>
+          <button class="btn" id="reset">Reset</button>
+        </div>
       </div>
       <div class="footerTips">
         Shortcuts: <span class="kbd">Enter</span> ausführen · <span class="kbd">↑</span>/<span class="kbd">↓</span> Verlauf · <span class="kbd">Tab</span> Autocomplete (mini) ·
@@ -60,22 +62,21 @@
     </div>
   </section>
 
-  <section class="card mapCard">
-    <h2>Ordner</h2>
+  <section class="card sidequestCard" id="sidequestCard" hidden>
+    <h2>Winkelmann Sidequest</h2>
     <div class="content">
-      <aside class="mapPanel" aria-label="Ordnerkarte">
-        <div class="mapHeader">🗺️ Ordnerkarte</div>
-        <pre class="mapTree" id="mapTree">Lade Karte…</pre>
-      </aside>
+      <div class="rewards" id="sidequestPanel"></div>
     </div>
   </section>
 
-  <section class="card">
-    <h2>Ziele (aktueller Run)</h2>
-    <div class="content objectives" id="objectives"></div>
+  <section class="card mapCard">
+    <h2>Ordnerkarte</h2>
+    <div class="content" aria-label="Ordnerkarte">
+      <pre class="mapTree" id="mapTree">Lade Karte…</pre>
+    </div>
   </section>
 
-  <section class="card">
+  <section class="card rewardsCard">
     <h2>Belohnungen</h2>
     <div class="content">
       <div class="rewards" id="rewards"></div>
@@ -83,6 +84,11 @@
         Autosave ist an. Wenn’s weird wird: <span class="kbd">reset</span> (hard reboot).
       </p>
     </div>
+  </section>
+
+  <section class="card objectivesCard">
+    <h2>Ziele (aktueller Run)</h2>
+    <div class="content objectives" id="objectives"></div>
   </section>
 </main>
 
