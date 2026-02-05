@@ -213,6 +213,8 @@
       height: var(--top-card-height);
       display:flex;
       flex-direction:column;
+      overflow-y:auto;
+      overflow-x:hidden;
     }
     .terminalCard{
       min-width:0;
