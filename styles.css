@@ -192,7 +192,10 @@
     .reward span{display:block; font-size:12px; color:var(--muted); margin-top:2px;}
     .terminalWrap{ display:flex; flex-direction:column; height: 700px; }
 
-    .storyCard{ min-width:0; }
+    .storyCard{
+      min-width:0;
+      grid-column: 1;
+    }
     .storyCard .content{
       min-height:700px;
       display:flex;
@@ -200,6 +203,7 @@
     }
     .terminalCard{
       min-width:0;
+      grid-column: 2;
       border-color: rgba(124,244,176,.45);
       box-shadow: 0 12px 36px rgba(0,0,0,.45), 0 0 0 1px rgba(124,244,176,.22);
     }
@@ -208,11 +212,17 @@
       background: linear-gradient(90deg, rgba(124,244,176,.15), rgba(0,0,0,.12) 55%);
       border-bottom-color: rgba(124,244,176,.35);
     }
+    .sidequestCard{ grid-column: 2; }
     .sidequestCard[hidden]{ display:none; }
     .sidequestCard .content{ min-height: 140px; }
-    .objectivesCard{ grid-column: 1 / -1; }
+    .objectivesCard{ grid-column: 1; }
+    .mapCard{ grid-column: 3; }
     .rewardsCard{ grid-column: 3; }
     @media (max-width: 1020px){
+      .storyCard,
+      .terminalCard,
+      .sidequestCard,
+      .mapCard,
       .rewardsCard,
       .objectivesCard{ grid-column: auto; }
     }

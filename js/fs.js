@@ -560,7 +560,7 @@
 
     // Sidequest UI (erst sichtbar, wenn freigeschaltet)
     // In Phase 5 (Arbeitsamt/Real-Life) verschwindet das wieder.
-    const show = !!(state.sidequest && state.sidequest.unlocked && state.phase < 5);
+    const show = !!(state.sidequest && state.sidequest.found_lab && state.sidequest.unlocked && state.phase < 5);
     card.hidden = !show;
     if(!show) return;
 
