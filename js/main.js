@@ -143,6 +143,11 @@ function showTaskTutorialStep(){
     return;
   }
 
+  const terminalPanel = el("terminalPanel");
+  if(terminalPanel){
+    terminalPanel.classList.add("tutorialFocus");
+  }
+
   if(task.kind === "input"){
     el("cmd").classList.add("tutorialInputFocus");
     showTutorialBubble(task.text, "Weiter", null, { showButton:false });
