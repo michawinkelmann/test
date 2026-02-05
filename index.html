@@ -46,7 +46,13 @@
   <section class="card">
     <h2>Terminal</h2>
     <div class="content terminalWrap">
-      <div class="terminal" id="term" aria-live="polite"></div>
+      <div class="terminalSplit">
+        <div class="terminal" id="term" aria-live="polite"></div>
+        <aside class="mapPanel" aria-label="Ordnerkarte">
+          <div class="mapHeader">🗺️ Ordnerkarte</div>
+          <pre class="mapTree" id="mapTree">Lade Karte…</pre>
+        </aside>
+      </div>
       <div class="inputBar">
         <div class="prompt" id="prompt">player@SchwarmShell:~$</div>
         <input id="cmd" type="text" autocomplete="off" spellcheck="false" placeholder='z.B. ls   oder   grep -n "wort" datei.txt   oder   find / -name "*.log"' />

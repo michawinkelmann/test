@@ -325,6 +325,100 @@
     ],
   };
 
+
+
+  function ensureMapVisited(path){
+    if(!Array.isArray(state.mapVisited)) state.mapVisited = ["/home/player"];
+    let changed = false;
+    const add = (pp)=>{
+      if(!pp || !getNode(pp) || state.mapVisited.includes(pp)) return;
+      state.mapVisited.push(pp);
+      changed = true;
+    };
+    let p = normPath(path || state.cwd || "/home/player");
+    add("/");
+    while(p && p !== "/"){
+      add(p);
+      p = parentDir(p);
+    }
+    add("/");
+    return changed;
+  }
+
+  function renderWorldMap(){
+    const mapEl = el("mapTree");
+    if(!mapEl) return;
+
+    const mapChanged = ensureMapVisited(state.cwd);
+    if(mapChanged) saveState();
+
+    const visited = new Set(state.mapVisited || []);
+    const visible = new Set(["/"]);
+
+    const markVisible = (path)=>{
+      if(!path || !getNode(path)) return;
+      visible.add(path);
+      const par = parentDir(path);
+      if(par && getNode(par)) visible.add(par);
+
+      const parKids = listDir(par || "/") || [];
+      for(const name of parKids){
+        const full = (par === "/" ? "" : par) + "/" + name;
+        if(getNode(full)?.type === "dir") visible.add(full);
+      }
+
+      const kids = listDir(path) || [];
+      for(const name of kids){
+        const full = (path === "/" ? "" : path) + "/" + name;
+        if(getNode(full)?.type === "dir") visible.add(full);
+      }
+    };
+
+    for(const p of visited) markVisible(p);
+    markVisible(state.cwd);
+
+    const lines = [];
+    const labelFor = (path)=>{
+      if(path === "/") return "/";
+      const name = path.split("/").pop();
+      const isCurrent = path === state.cwd;
+      const wasVisited = visited.has(path);
+      const marker = isCurrent ? "◉" : (wasVisited ? "●" : "○");
+
+      const allKids = (listDir(path) || []).filter((n)=>{
+        const full = (path === "/" ? "" : path) + "/" + n;
+        return getNode(full)?.type === "dir";
+      });
+      const visibleKids = allKids.filter((n)=>{
+        const full = (path === "/" ? "" : path) + "/" + n;
+        return visible.has(full);
+      });
+      const hasHidden = allKids.length > visibleKids.length;
+
+      return `${marker} ${name}${hasHidden ? " …" : ""}`;
+    };
+
+    function walk(path, prefix, isLast){
+      if(path !== "/"){
+        lines.push(prefix + (isLast ? "└─ " : "├─ ") + labelFor(path));
+      }else{
+        lines.push(labelFor(path));
+      }
+
+      const kids = (listDir(path) || []).map((name)=>{
+        const full = (path === "/" ? "" : path) + "/" + name;
+        return { name, path: full, node: getNode(full) };
+      }).filter((x)=>x.node?.type === "dir" && visible.has(x.path));
+
+      kids.sort((a,b)=>a.name.localeCompare(b.name, "de"));
+
+      const childPrefix = (path === "/") ? "" : (prefix + (isLast ? "   " : "│  "));
+      kids.forEach((kid, idx)=> walk(kid.path, childPrefix, idx === kids.length - 1));
+    }
+
+    walk("/", "", true);
+    mapEl.textContent = lines.join("\n");
+  }
   function locationPath(){
     let p = state.cwd;
     while(p.length>1 && !LOC[p]){
@@ -358,6 +452,7 @@
     el("locImg").src = svgData(loc.name, loc.tag, loc.mood);
 
     renderPhaseCommands();
+    renderWorldMap();
 
     const npcsHere = Object.entries(NPCS)
       .filter(([id,n])=>n.at.includes(lp))

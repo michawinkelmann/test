@@ -51,7 +51,8 @@
       badge:false
     },
     jobArc: { active:false, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false }, startedAt:null },
-    superpc: { active:false, returnCwd:"" }
+    superpc: { active:false, returnCwd:"" },
+    mapVisited: ["/home/player"]
   };
 
   function loadState(){
@@ -78,6 +79,7 @@
       if(s.v !== 5) return structuredClone(INITIAL_STATE);
       s.jobArc = Object.assign({}, INITIAL_STATE.jobArc, (s.jobArc||{}));
       s.jobArc.quests = Object.assign({}, INITIAL_STATE.jobArc.quests, (s.jobArc.quests||{}));
+      if(!Array.isArray(s.mapVisited)) s.mapVisited = ["/home/player"];
       return s;
     }catch(e){
       return structuredClone(INITIAL_STATE);

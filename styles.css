@@ -188,6 +188,50 @@
     .reward span{display:block; font-size:12px; color:var(--muted); margin-top:2px;}
     .terminalWrap{ display:flex; flex-direction:column; height: 700px; }
     @media (max-width: 1020px){ .terminalWrap{height: 600px;} }
+
+    .terminalSplit{
+      flex:1 1 auto;
+      min-height:0;
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) 280px;
+      gap:10px;
+    }
+    .mapPanel{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: rgba(0,0,0,.26);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      overflow:hidden;
+    }
+    .mapHeader{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+      background:rgba(255,255,255,.02);
+    }
+    .mapTree{
+      margin:0;
+      padding:10px 12px 12px 12px;
+      color:var(--text);
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.45;
+      white-space:pre;
+      overflow:auto;
+      flex:1 1 auto;
+    }
+    @media (max-width: 1180px){
+      .terminalSplit{ grid-template-columns:minmax(0, 1fr) 240px; }
+    }
+    @media (max-width: 860px){
+      .terminalSplit{ grid-template-columns:1fr; }
+      .mapPanel{ max-height:260px; }
+    }
     .terminal{
       flex: 1 1 auto;
       background: rgba(0,0,0,.22);
