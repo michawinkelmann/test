@@ -3414,6 +3414,22 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     let trimmed = String(line||"").trim();
     if(!trimmed) return;
 
+    let guidedBlockMessage = "";
+    try{
+      if(window.getGuidedTutorialBlockMessage){
+        guidedBlockMessage = window.getGuidedTutorialBlockMessage(trimmed) || "";
+      }
+    }catch(e){}
+    if(guidedBlockMessage){
+      state.lastCmds.unshift(trimmed);
+      state.lastCmds = state.lastCmds.slice(0, 120);
+      state.historyIndex = 0;
+      saveState();
+      row(`${promptText()} ${trimmed}`, "p");
+      row(guidedBlockMessage, "warn");
+      return;
+    }
+
     if(trimmed === "1337"){
       applyCheat1337();
       return;
@@ -3485,6 +3501,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
         if(j === segments.length - 1){
           if(r.out) row(r.out);
         }
+        try{ if(window.checkTutorialCommand) window.checkTutorialCommand(segments[j]); }catch(e){}
         saveState();
         renderObjectives();
         renderLocation();
