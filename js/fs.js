@@ -646,29 +646,40 @@
     pill.textContent = "Phase: " + label;
   }
 
-function shortenPromptPath(path, maxLen = 36){
-    if(typeof path !== "string") return "~";
+function shortenPromptPath(path, maxLen = 52){
+    if(typeof path !== "string" || !path) return "~";
     if(path.length <= maxLen) return path;
 
-    const prefix = path.startsWith("~") ? "~" : "/";
-    const parts = path.replace(/^~\/?/, "").split("/").filter(Boolean);
-    if(parts.length <= 2) return `…${path.slice(-(maxLen - 1))}`;
+    const isHome = path.startsWith("~");
+    const prefix = isHome ? "~" : "/";
+    const trimmed = isHome ? path.replace(/^~\/?/, "") : path.replace(/^\//, "");
+    const parts = trimmed.split("/").filter(Boolean);
 
+    // Sehr kurze Pfade: hinten zeigen, ohne den Start komplett zu verlieren.
+    if(parts.length <= 1) return `${prefix}…${path.slice(-(maxLen - 2))}`;
+
+    const firstSegment = parts[0];
     const tail = [];
-    let tailLen = 0;
-    for(let i = parts.length - 1; i >= 0; i--){
-      const segment = parts[i];
-      const extra = (tail.length ? 1 : 0) + segment.length;
-      if(tailLen + extra > Math.max(12, maxLen - 8)) break;
-      tail.unshift(segment);
-      tailLen += extra;
+    let used = prefix.length + 1 + firstSegment.length + 4; // "<prefix>/<first>/..."
+
+    for(let i = parts.length - 1; i >= 1; i--){
+      const seg = parts[i];
+      const extra = seg.length + 1; // "/" + segment
+      if(used + extra > maxLen) break;
+      tail.unshift(seg);
+      used += extra;
     }
 
-    return `${prefix}…/${tail.join("/")}`;
+    if(!tail.length){
+      return `${prefix}/${firstSegment}/...`;
+    }
+
+    return `${prefix}/${firstSegment}/.../${tail.join("/")}`;
   }
 
 function promptText(){
-    const short = state.cwd.replace(/^\/home\/player/, "~");
+    const cwd = (typeof state?.cwd === "string" && state.cwd) ? state.cwd : "/home/player";
+    const short = cwd.replace(/^\/home\/player/, "~");
     return `player@SchwarmShell:${shortenPromptPath(short)}$`;
   }
 

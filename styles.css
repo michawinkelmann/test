@@ -303,8 +303,7 @@
       min-width:0;
       white-space:nowrap;
       overflow:hidden;
-      text-overflow:ellipsis;
-      direction:rtl;
+      direction:ltr;
       text-align:left;
     }
     .inputControls{
