@@ -3488,6 +3488,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
         saveState();
         renderObjectives();
         renderLocation();
+        promptEl.textContent = promptText();
         progressPhaseIfReady();
         renderRewards();
         renderSidequestPanel();
