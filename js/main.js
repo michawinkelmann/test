@@ -31,7 +31,7 @@ const TUTORIAL_TASKS = [
   { id:"ls_home", kind:"input", text:'Du bist in deinem Zimmer. Schaue dich mal um und mache dich mit deiner Umgebung vertraut. Tippe dazu "ls" in das Eingabefeld ein und bestätige deine Eingabe mit der Entertaste auf der Tastatur oder mit dem "Run" Knopf rechts.' },
   { id:"cd_backpack", kind:"output", text:'In der Ausgabe erkennst du Ordner an einem Slash (/) und Dateien ohne Slash (z.B. readme.txt). Wechsle jetzt mit "cd backpack/" in den Ordner.' },
   { id:"ls_backpack", kind:"input", text:'Super. Schau dich auch hier mit "ls" um.' },
-  { id:"cat_snack", kind:"output", text:'Mit "cat" kannst du Dateien lesen bzw. mit Gegenständen interagieren. Probier das mit der Datei hier im Ordner aus.' },
+  { id:"cat_snack", kind:"output", text:'Mit "cat" kannst du Dateien lesen bzw. mit Gegenständen interagieren. Probier das mit der Datei hier im Ordner aus. Geben dazu "cat snack.txt" ein.' },
   { id:"cd_up", kind:"input", text:'Du kannst mit "cd .." eine Ebene nach oben gehen. Probier das jetzt aus.' },
   { id:"final", kind:"input", text:'Sehr gut! Viel Erfolg im Spiel 🎉 Lies jetzt mit "cat readme.txt" weiter und leg los.' }
 ];
@@ -42,6 +42,7 @@ let guidedTutorial = {
   panelStep:0,
   taskStep:0
 };
+let bootLoadSource = "Autosave";
 
 function startNewGuidedGame(){
   doReset(false);
@@ -77,24 +78,31 @@ function clearTutorialFocus(){
   });
 }
 
-function placeBubbleAt(targetEl){
+function placeBubbleAt(targetEl, opts={}){
   const bubble = el("tutorialBubble");
   const rect = targetEl.getBoundingClientRect();
-  const top = Math.min(window.innerHeight - bubble.offsetHeight - 12, Math.max(12, rect.top + 8));
+  const topOffset = Number(opts.topOffset || 8);
+  const top = Math.min(window.innerHeight - bubble.offsetHeight - 12, Math.max(12, rect.top + topOffset));
   const left = Math.min(window.innerWidth - bubble.offsetWidth - 12, Math.max(12, rect.right + 12));
   bubble.style.top = `${top}px`;
   bubble.style.left = `${left}px`;
 }
 
-function showTutorialBubble(text, buttonText, onClick){
+function showTutorialBubble(text, buttonText, onClick, opts={}){
   const overlay = el("tutorialOverlay");
   const bubble = el("tutorialBubble");
   overlay.hidden = false;
   bubble.hidden = false;
   el("tutorialText").textContent = text;
   const btn = el("tutorialBtn");
-  btn.textContent = buttonText || "Weiter";
-  btn.onclick = onClick || null;
+  const showButton = Boolean(opts.showButton !== false);
+  btn.hidden = !showButton;
+  if(showButton){
+    btn.textContent = buttonText || "Weiter";
+    btn.onclick = onClick || null;
+  }else{
+    btn.onclick = null;
+  }
 }
 
 function hideTutorialBubble(){
@@ -137,13 +145,39 @@ function showTaskTutorialStep(){
 
   if(task.kind === "input"){
     el("cmd").classList.add("tutorialInputFocus");
-    showTutorialBubble(task.text, "Weiter", null);
-    requestAnimationFrame(()=>placeBubbleAt(el("cmd")));
+    showTutorialBubble(task.text, "Weiter", null, { showButton:false });
+    const topOffset = (task.id === "ls_home" || task.id === "ls_backpack") ? 40 : 8;
+    requestAnimationFrame(()=>placeBubbleAt(el("cmd"), { topOffset }));
   } else {
     el("term").classList.add("tutorialInputFocus");
-    showTutorialBubble(task.text, "Weiter", null);
+    showTutorialBubble(task.text, "Weiter", null, { showButton:false });
     requestAnimationFrame(()=>placeBubbleAt(el("term")));
   }
+}
+
+function getGuidedTutorialBlockMessage(segment){
+  if(!guidedTutorial.active) return "";
+  const s = String(segment||"").trim();
+  if(!s) return "";
+
+  if(guidedTutorial.panelStep < TUTORIAL_STEPS.length){
+    return "Noch nicht junger Padawan, halte dich an die Einführung!";
+  }
+
+  const task = TUTORIAL_TASKS[guidedTutorial.taskStep];
+  if(!task) return "";
+
+  const expectedByTask = {
+    ls_home: ["ls"],
+    cd_backpack: ["cd backpack", "cd backpack/"],
+    ls_backpack: ["ls"],
+    cat_snack: ["cat snack.txt"],
+    cd_up: ["cd .."],
+    final: ["cat readme.txt"]
+  };
+  const expected = expectedByTask[task.id] || [];
+  if(expected.includes(s)) return "";
+  return "Noch nicht junger Padawan, halte dich an die Einführung!";
 }
 
 function checkTutorialCommand(segment){
@@ -210,7 +244,8 @@ function boot(){
     row("Mini-Tipp: help zeigt deine freigeschalteten Commands.", "p");
     row("Mini-Tipp 2: quests ist dein Quest-Tracker.", "p");
   }else{
-    rowHtml(`<span class="p">[${escapeHtml(now())}] Autosave geladen. Tipp: <span class="kbd">quests</span></span>`);
+    rowHtml(`<span class="p">[${escapeHtml(now())}] ${escapeHtml(bootLoadSource)} geladen. Tipp: <span class="kbd">quests</span></span>`);
+    bootLoadSource = "Autosave";
     progressPhaseIfReady();
   }
 }
@@ -236,6 +271,7 @@ el("startAutosave").addEventListener("click", ()=>{
   if(!hasAutosave()){
     doReset(false);
   }
+  bootLoadSource = "Autosave";
   boot();
 });
 
@@ -259,6 +295,7 @@ el("savegameConfirm").addEventListener("click", ()=>{
   }
   closeStartModal();
   el("savegameLoad").hidden = true;
+  bootLoadSource = "Savegame";
   boot();
 });
 
@@ -389,6 +426,7 @@ function sanityCheckNPCs(){
 }
 
 window.checkTutorialCommand = checkTutorialCommand;
+window.getGuidedTutorialBlockMessage = getGuidedTutorialBlockMessage;
 
 if(!window.__traceInterval){
   window.__traceInterval = setInterval(()=>{
