@@ -210,7 +210,7 @@
     }
     .sidequestCard[hidden]{ display:none; }
     .sidequestCard .content{ min-height: 140px; }
-    .objectivesCard{ grid-column: 1 / -1; }
+    .objectivesCard{ grid-column: 1; }
     .rewardsCard{ grid-column: 3; }
     @media (max-width: 1020px){
       .rewardsCard,
