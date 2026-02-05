@@ -20,7 +20,7 @@
   </p></header>
 
 <main>
-  <section class="card">
+  <section class="card storyCard">
     <h2>Ort & Story</h2>
     <div class="content">
       <div class="locationImage"><img id="locImg" alt="Ort" /></div>
@@ -43,7 +43,7 @@
     </div>
   </section>
 
-  <section class="card">
+  <section class="card terminalCard">
     <h2>Terminal</h2>
     <div class="content terminalWrap">
       <div class="terminal" id="term" aria-live="polite"></div>
@@ -57,6 +57,16 @@
         Shortcuts: <span class="kbd">Enter</span> ausführen · <span class="kbd">↑</span>/<span class="kbd">↓</span> Verlauf · <span class="kbd">Tab</span> Autocomplete (mini) ·
         <span class="kbd">clear</span> Terminal leeren
       </div>
+    </div>
+  </section>
+
+  <section class="card mapCard">
+    <h2>Ordner</h2>
+    <div class="content">
+      <aside class="mapPanel" aria-label="Ordnerkarte">
+        <div class="mapHeader">🗺️ Ordnerkarte</div>
+        <pre class="mapTree" id="mapTree">Lade Karte…</pre>
+      </aside>
     </div>
   </section>
 
