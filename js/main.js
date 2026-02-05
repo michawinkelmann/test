@@ -8,7 +8,7 @@ const TUTORIAL_STEPS = [
   {
     target: "mapPanel",
     text: "Die Ordnerkarte zeigt dir den Aufbau der Spielwelt als Verzeichnisbaum. So behältst du den Überblick.",
-    button: "Ich check"
+    button: "Okay"
   },
   {
     target: "objectivesPanel",
@@ -141,6 +141,11 @@ function showTaskTutorialStep(){
   if(!task){
     endGuidedTutorial();
     return;
+  }
+
+  const terminalPanel = el("terminalPanel");
+  if(terminalPanel){
+    terminalPanel.classList.add("tutorialFocus");
   }
 
   if(task.kind === "input"){
