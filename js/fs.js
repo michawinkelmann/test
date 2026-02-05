@@ -646,9 +646,30 @@
     pill.textContent = "Phase: " + label;
   }
 
+function shortenPromptPath(path, maxLen = 36){
+    if(typeof path !== "string") return "~";
+    if(path.length <= maxLen) return path;
+
+    const prefix = path.startsWith("~") ? "~" : "/";
+    const parts = path.replace(/^~\/?/, "").split("/").filter(Boolean);
+    if(parts.length <= 2) return path.slice(0, maxLen - 1) + "…";
+
+    const tail = [];
+    let tailLen = 0;
+    for(let i = parts.length - 1; i >= 0; i--){
+      const segment = parts[i];
+      const extra = (tail.length ? 1 : 0) + segment.length;
+      if(tailLen + extra > Math.max(12, maxLen - 8)) break;
+      tail.unshift(segment);
+      tailLen += extra;
+    }
+
+    return `${prefix}…/${tail.join("/")}`;
+  }
+
 function promptText(){
     const short = state.cwd.replace(/^\/home\/player/, "~");
-    return `player@SchwarmShell:${short}$`;
+    return `player@SchwarmShell:${shortenPromptPath(short)}$`;
   }
 
   
