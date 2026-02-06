@@ -3558,3 +3558,16 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     row("Oder direkt springen (absolute Pfade): cd /school", "muted");
 
       }
+
+  function guidedIntro(){
+    const msg = "Willkommen im SchwarmShell";
+    const innerWidth = msg.length + 4;
+    const line = "═".repeat(innerWidth);
+    row("╔" + line + "╗");
+    row("║  " + msg + "  ║");
+    row("╚" + line + "╝");
+    row("Du bist Schüler*in der KGS Schwarmstedt.");
+    row("Und heute passiert etwas komplett Unnötiges:", "warn");
+    row("Euer Schulsystem glitched — und die Welt fühlt sich an wie ein Game.");
+    row("Dein Job: Bash lernen und raus-escapen. (Main Character Moment.)");
+  }
