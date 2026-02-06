@@ -47,6 +47,7 @@ let bootLoadSource = "Autosave";
 function startNewGuidedGame(){
   doReset(false);
   state.flags.booted = true;
+  bootLoadSource = "Guided";
   if(!state.startedAt) state.startedAt = now();
   saveState();
   boot();
@@ -249,6 +250,14 @@ function boot(){
     row("Mini-Tipp: help zeigt deine freigeschalteten Commands.", "p");
     row("Mini-Tipp 2: quests ist dein Quest-Tracker.", "p");
   }else{
+    if(bootLoadSource === "Guided"){
+      if(typeof guidedIntro === "function"){
+        guidedIntro();
+      }
+      bootLoadSource = "Autosave";
+      progressPhaseIfReady();
+      return;
+    }
     rowHtml(`<span class="p">[${escapeHtml(now())}] ${escapeHtml(bootLoadSource)} geladen. Tipp: <span class="kbd">quests</span></span>`);
     bootLoadSource = "Autosave";
     progressPhaseIfReady();
