@@ -46,7 +46,6 @@ let bootLoadSource = "Autosave";
 
 function startNewGuidedGame(){
   doReset(false);
-  state.flags.booted = true;
   if(!state.startedAt) state.startedAt = now();
   saveState();
   boot();
