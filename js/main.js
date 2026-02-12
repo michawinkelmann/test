@@ -251,7 +251,7 @@ function syncClippyTooltip(){
   const tooltip = el("clippyTooltip");
   if(!tooltip || tooltip.hidden) return;
   const payload = buildClippyContent();
-  if(!payload || getClippyCooldownRemainingMs() > 0){
+  if(!payload){
     closeClippyTooltip();
     return;
   }
