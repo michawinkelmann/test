@@ -228,6 +228,44 @@ body{
       background: linear-gradient(90deg, rgba(124,244,176,.15), rgba(0,0,0,.12) 55%);
       border-bottom-color: rgba(124,244,176,.35);
     }
+
+    .terminalCardHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .clippyBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      padding:6px 10px;
+      border-color: rgba(124,244,176,.4);
+      background: rgba(124,244,176,.14);
+      color: rgba(222,255,238,.95);
+    }
+    .clippyBtn:hover{ border-color: rgba(124,244,176,.75); }
+
+    .clippyTooltip{
+      position:fixed;
+      z-index:1700;
+      width:min(560px, calc(100vw - 24px));
+      max-height:min(72vh, 700px);
+      overflow:auto;
+      border:1px solid rgba(124,244,176,.45);
+      border-radius:14px;
+      padding:12px;
+      background:rgba(12,18,26,.98);
+      box-shadow:0 12px 26px rgba(0,0,0,.45);
+    }
+    .clippyTitle{ margin:0 0 6px 0; font-size:14px; color:var(--accent); }
+    .clippySub{ margin:0 0 10px 0; color:var(--muted); font-size:12px; line-height:1.4; }
+    .clippySteps{ margin:0; padding-left:18px; font-size:12px; line-height:1.45; }
+    .clippySteps li{ margin-bottom:8px; }
+    .clippyHint{ margin:8px 0 0 0; color:var(--muted); font-size:12px; }
+    .clippyActions{ margin-top:12px; display:flex; justify-content:flex-end; }
+
     .sidequestCard{ grid-column: 2; grid-row: 2; }
     .sidequestCard[hidden]{ display:none; }
     .sidequestCard .content{ min-height: 140px; }

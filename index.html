@@ -71,7 +71,10 @@
   </section>
 
   <section class="card terminalCard" id="terminalPanel">
-    <h2>Terminal</h2>
+    <h2 class="terminalCardHeader">
+      <span>Terminal</span>
+      <button class="btn clippyBtn" id="clippyHelperBtn" type="button" aria-expanded="false" aria-controls="clippyTooltip">📎 Clippy Helfer</button>
+    </h2>
     <div class="content terminalWrap">
       <div class="terminal" id="term" aria-live="polite"></div>
       <div class="inputBar">
@@ -89,6 +92,8 @@
       </div>
     </div>
   </section>
+
+  <div class="clippyTooltip" id="clippyTooltip" hidden role="dialog" aria-live="polite" aria-label="Clippy Helfer"></div>
 
   <section class="card sidequestCard" id="sidequestCard" hidden>
     <h2>Winkelmann Sidequest</h2>
