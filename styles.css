@@ -314,6 +314,17 @@ body{
       border-radius:12px;
       background: rgba(0,0,0,.26);
     }
+    .mapLine{ display:block; }
+    .mapLineCurrent{
+      color: var(--accent);
+      font-weight: 700;
+      background: linear-gradient(90deg, rgba(124,244,176,.22), rgba(124,244,176,0));
+      box-shadow: inset 0 0 0 1px rgba(124,244,176,.28);
+      border-radius: 6px;
+      padding: 1px 6px;
+      margin: 0 -6px;
+      text-shadow: 0 0 10px rgba(124,244,176,.45);
+    }
     @media (max-width: 1020px){
       .terminalWrap{height:auto;}
       .mapCard .content{height:auto;}

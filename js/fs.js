@@ -399,10 +399,14 @@
     };
 
     function walk(path, prefix, isLast){
+      const isCurrent = path === state.cwd;
       if(path !== "/"){
-        lines.push(prefix + (isLast ? "└─ " : "├─ ") + labelFor(path));
+        lines.push({
+          text: prefix + (isLast ? "└─ " : "├─ ") + labelFor(path),
+          isCurrent
+        });
       }else{
-        lines.push(labelFor(path));
+        lines.push({ text: labelFor(path), isCurrent });
       }
 
       const kids = (listDir(path) || []).map((name)=>{
@@ -417,7 +421,13 @@
     }
 
     walk("/", "", true);
-    mapEl.textContent = lines.join("\n");
+    const escapeMapText = (value)=>String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    mapEl.innerHTML = lines
+      .map((line)=>`<span class="mapLine${line.isCurrent ? " mapLineCurrent" : ""}">${escapeMapText(line.text)}</span>`)
+      .join("\n");
   }
   function locationPath(){
     let p = state.cwd;
