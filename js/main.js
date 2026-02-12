@@ -179,6 +179,12 @@ function getOpenClippyObjectiveKey(){
   return String(tooltip.dataset.objectiveKey || "");
 }
 
+function getOpenClippyObjectiveTitle(){
+  const tooltip = el("clippyTooltip");
+  if(!tooltip) return "";
+  return String(tooltip.dataset.objectiveTitle || "");
+}
+
 function positionClippyTooltip(){
   const tooltip = el("clippyTooltip");
   const btn = el("clippyHelperBtn");
@@ -198,6 +204,7 @@ function closeClippyTooltip(){
   tooltip.style.top = "";
   tooltip.style.left = "";
   delete tooltip.dataset.objectiveKey;
+  delete tooltip.dataset.objectiveTitle;
   btn.setAttribute("aria-expanded", "false");
 }
 
@@ -226,6 +233,7 @@ function showClippyTooltip(){
   `;
   tooltip.hidden = false;
   tooltip.dataset.objectiveKey = key;
+  tooltip.dataset.objectiveTitle = objective.title;
   btn.setAttribute("aria-expanded", "true");
 
   ensureClippyState();
@@ -248,6 +256,10 @@ function syncClippyTooltip(){
     return;
   }
   if(payload.key !== getOpenClippyObjectiveKey()){
+    closeClippyTooltip();
+    return;
+  }
+  if(payload.objective.title !== getOpenClippyObjectiveTitle()){
     closeClippyTooltip();
     return;
   }
