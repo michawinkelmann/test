@@ -464,8 +464,11 @@
     renderPhaseCommands();
     renderWorldMap();
 
+    // NPCs müssen immer zum echten aktuellen Raum passen.
+    // Wichtig: Für Räume ohne eigenes LOC-Label (Fallback auf Eltern-Loc)
+    // dürfen NICHT die NPCs des Elternraums angezeigt werden.
     const npcsHere = Object.entries(NPCS)
-      .filter(([id,n])=>n.at.includes(lp))
+      .filter(([id,n])=>(n.at||[]).includes(state.cwd))
       .map(([id,n])=>`${n.name}`);
     el("locNPCs").textContent = npcsHere.length ? ("NPCs hier: " + npcsHere.join(" · ") + "  →  talk <name>") : "NPCs hier: —";
     if(npcsHere.length && !state.npcTipShown){
