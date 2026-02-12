@@ -102,6 +102,60 @@ function getCurrentMainObjective(){
   return list.find((o)=>!o.done(state)) || null;
 }
 
+const CLIPPY_COOLDOWN_MS = 5 * 60 * 1000;
+
+function ensureClippyState(){
+  if(!state.clippy || typeof state.clippy !== "object") state.clippy = { lastUsedAt: 0 };
+  if(!Number.isFinite(Number(state.clippy.lastUsedAt))) state.clippy.lastUsedAt = 0;
+}
+
+function getClippyCooldownRemainingMs(){
+  ensureClippyState();
+  const elapsed = Date.now() - Number(state.clippy.lastUsedAt || 0);
+  return Math.max(0, CLIPPY_COOLDOWN_MS - elapsed);
+}
+
+function formatCooldown(ms){
+  const totalSec = Math.ceil(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+}
+
+function renderClippyAvailability(){
+  const btn = el("clippyHelperBtn");
+  const status = el("clippyStatus");
+  if(!btn || !status) return;
+
+  const remaining = getClippyCooldownRemainingMs();
+  const hasObjective = !!getCurrentMainObjective();
+  const isCooldown = remaining > 0;
+
+  btn.classList.toggle("isCooldown", isCooldown);
+  status.classList.remove("isReady", "isCooldown");
+
+  if(!hasObjective){
+    btn.disabled = true;
+    btn.textContent = "📎 Clippy Helfer";
+    status.textContent = "Status: aktuell keine Mainquest aktiv";
+    status.classList.add("isCooldown");
+    return;
+  }
+
+  if(isCooldown){
+    btn.disabled = true;
+    btn.textContent = `📎 Clippy Cooldown (${formatCooldown(remaining)})`;
+    status.textContent = `Status: Cooldown aktiv · Restzeit ${formatCooldown(remaining)}`;
+    status.classList.add("isCooldown");
+    return;
+  }
+
+  btn.disabled = false;
+  btn.textContent = "📎 Clippy Helfer";
+  status.textContent = "Status: bereit";
+  status.classList.add("isReady");
+}
+
 function buildClippyContent(){
   const current = getCurrentMainObjective();
   if(!current) return null;
@@ -144,6 +198,11 @@ function showClippyTooltip(){
   const tooltip = el("clippyTooltip");
   const btn = el("clippyHelperBtn");
   if(!tooltip || !btn) return;
+  const remaining = getClippyCooldownRemainingMs();
+  if(remaining > 0){
+    closeClippyTooltip();
+    return;
+  }
   const payload = buildClippyContent();
   if(!payload){
     closeClippyTooltip();
@@ -160,15 +219,22 @@ function showClippyTooltip(){
   `;
   tooltip.hidden = false;
   btn.setAttribute("aria-expanded", "true");
+
+  ensureClippyState();
+  state.clippy.lastUsedAt = Date.now();
+  saveState();
+  renderClippyAvailability();
+
   const closeBtn = el("clippyCloseBtn");
   if(closeBtn) closeBtn.addEventListener("click", closeClippyTooltip);
   requestAnimationFrame(positionClippyTooltip);
 }
 
 function syncClippyTooltip(){
+  renderClippyAvailability();
   const tooltip = el("clippyTooltip");
   if(!tooltip || tooltip.hidden) return;
-  if(!getCurrentMainObjective()){
+  if(!getCurrentMainObjective() || getClippyCooldownRemainingMs() > 0){
     closeClippyTooltip();
     return;
   }
@@ -493,6 +559,7 @@ cmdInput.addEventListener("keydown", (e)=>{
 const clippyBtn = el("clippyHelperBtn");
 if(clippyBtn){
   clippyBtn.addEventListener("click", ()=>{
+    renderClippyAvailability();
     const tooltip = el("clippyTooltip");
     if(tooltip && !tooltip.hidden){
       closeClippyTooltip();
@@ -504,6 +571,11 @@ if(clippyBtn){
 window.addEventListener("resize", ()=>{
   positionClippyTooltip();
 });
+
+setInterval(()=>{
+  renderClippyAvailability();
+}, 1000);
+renderClippyAvailability();
 
 showStartModal();
 
