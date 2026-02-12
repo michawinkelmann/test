@@ -52,7 +52,8 @@
     },
     jobArc: { active:false, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false }, startedAt:null },
     superpc: { active:false, returnCwd:"" },
-    mapVisited: ["/home/player"]
+    mapVisited: ["/home/player"],
+    clippy: { lastUsedAt: 0 }
   };
 
   function normalizeState(candidate){
@@ -78,6 +79,7 @@
       s.jobArc = Object.assign({}, INITIAL_STATE.jobArc, (s.jobArc||{}));
       s.jobArc.quests = Object.assign({}, INITIAL_STATE.jobArc.quests, (s.jobArc.quests||{}));
       if(!Array.isArray(s.mapVisited)) s.mapVisited = ["/home/player"];
+      s.clippy = Object.assign({}, INITIAL_STATE.clippy, (s.clippy||{}));
       return s;
     }catch(e){
       return structuredClone(INITIAL_STATE);
