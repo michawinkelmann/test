@@ -368,16 +368,16 @@ NAMENSGEBUNG
 function allowedCommands(){
     let base = [];
     if(state.phase === 1){
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","unlock","talk","quests","inventory","reset","man"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","unlock","talk","choose","quests","inventory","reset","man"];
     } else if(state.phase === 2){
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","talk","quests","inventory","reset","man","find"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","talk","choose","quests","inventory","reset","man","find"];
     } else if(state.phase === 3){
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","quests","inventory","reset","man","chmod"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","choose","quests","inventory","reset","man","chmod"];
     } else if(state.phase === 4){
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","quests","inventory","reset","man","chmod","ps","top","kill","history","alias","mentor_clear"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","choose","quests","inventory","reset","man","chmod","ps","top","kill","history","alias","mentor_clear"];
     } else if(state.phase >= 5){
       // Phase 5: Alles aus 1–4 ist freigeschaltet (Real Life).
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","quests","inventory","reset","man","chmod","ps","top","kill","history","alias","mentor_clear"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","choose","quests","inventory","reset","man","chmod","ps","top","kill","history","alias","mentor_clear"];
     }
 
     // "assemble" is only meaningful after all fragments are collected
@@ -387,7 +387,7 @@ function allowedCommands(){
 
 
     if(state.sidequest && state.sidequest.unlocked){
-      base.push("connect","choose");
+      base.push("connect");
       if(state.superpc && state.superpc.active){
         base.push("ping","ssh","scp","logwipe","netmap","exit");
       }
@@ -469,6 +469,202 @@ function allowedCommands(){
     if(args[1] !== "-name") return { err:"find: only supports -name in this game" };
     const pattern = args.slice(2).join(" ");
     return { start, pattern: stripQuotes(pattern) };
+  }
+
+  const NPC_DIALOG_EXCLUDED = new Set(["winkelmann","harries","pietsch","beamter","jansen","wiebe","neele","tom","holger","noah","emma","leo"]);
+
+  function resetNpcDialog(){
+    if(!state.npcDialog || typeof state.npcDialog !== "object") state.npcDialog = { active:false, npcId:null, nodeId:null };
+    state.npcDialog.active = false;
+    state.npcDialog.npcId = null;
+    state.npcDialog.nodeId = null;
+  }
+
+  function getNpcDialogType(npcId, npc){
+    const role = String((npc && npc.role) || "").toLowerCase();
+    if(role.includes("schüler") || role.includes("schueler") || /^s_/i.test(npcId)) return "student";
+    return "teacher";
+  }
+
+  function pickNpcLine(npcId, options){
+    let h = 0;
+    for(const ch of String(npcId||"")) h = (h * 33 + ch.charCodeAt(0)) >>> 0;
+    return options[h % options.length];
+  }
+
+  function getTeacherDialogName(npc){
+    const rawName = String((npc && npc.name) || "").trim();
+    const role = String((npc && npc.role) || "").toLowerCase();
+    const nameWithoutParens = rawName.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+    const tokens = nameWithoutParens.split(/\s+/).filter(Boolean);
+    const clean = tokens.filter(t => !/^(herr|frau|dr\.?|prof\.?|prof\.dr\.?)$/i.test(t));
+    const lastName = (clean[clean.length - 1] || tokens[tokens.length - 1] || "Lehrkraft").replace(/,$/, "");
+    const femaleFirstNames = new Set([
+      "mascha","maren","kathrin","johanna","dörte","ulrike","kristina","julia","karla","simona",
+      "agnieszka","chiara","silke","lena","lara","claudia"
+    ]);
+    const firstName = (clean[0] || tokens[0] || "").toLowerCase();
+    let honorific = "Herr";
+    if(/\bfrau\b/i.test(rawName)) honorific = "Frau";
+    else if(/\bherr\b/i.test(rawName)) honorific = "Herr";
+    else if(role.includes("leiterin") || role.includes("direktorstellvertreterin") || femaleFirstNames.has(firstName)) honorific = "Frau";
+    return `${honorific} ${lastName}`;
+  }
+
+  function getDialogSpeakerName(npcId, npc){
+    if(getNpcDialogType(npcId, npc) === "teacher") return getTeacherDialogName(npc);
+    return String((npc && npc.name) || npcId || "NPC");
+  }
+
+  function buildNpcDialogTree(npcId, npc){
+    const shortName = String((npc && npc.name) || npcId || "NPC").split(" ")[0];
+    const teacherName = getTeacherDialogName(npc);
+    let hash = 0;
+    for(const ch of String(npcId||"")) hash = (hash * 33 + ch.charCodeAt(0)) >>> 0;
+
+    if(getNpcDialogType(npcId, npc) === "teacher"){
+      const teacherStyles = [
+        {
+          intro:`„${teacherName}: Schön, dass du fragst. Lass uns dein Thema klar sortieren, dann wird es sofort leichter.“`,
+          planPrompt:"Was passt gerade am besten zu deiner Lage?",
+          planA:{ label:"Ich brauche eine klare Reihenfolge statt Trial-and-Error.", response:"„Dann gehst du immer in drei Schritten: Ziel lesen, Fundort prüfen, erst dann handeln.“" },
+          planB:{ label:"Wie verhindere ich, mich in Nebensachen zu verlieren?", response:"„Arbeite mit einem Mini-Fokusfenster: ein Ziel, ein Kommando, ein Check.“" },
+          learnA:{ label:"Ich will Kommandos verstehen, nicht nur reproduzieren.", response:"„Sehr gut. Stell zu jedem Befehl drei Fragen: Was ändert sich, was bleibt, woran sehe ich Erfolg?“" },
+          learnB:{ label:"Wie lerne ich effizient für Abgaben unter Zeitdruck?", response:"„Mit kurzen Intervallen: Orientierung, Umsetzung, Kontrolle. Keine Panik-Sprints.“" },
+          talkA:{ label:"Was ist Ihr persönlicher Anti-Stress-Trick?", response:"„Komplexes in kleine, überprüfbare Schritte zerlegen. Das beruhigt sofort.“" },
+          talkB:{ label:"Was nervt Sie am meisten bei chaotischen Abgaben?", response:"„Unklare Benennung. Gute Struktur spart allen Zeit und Nerven.“" }
+        },
+        {
+          intro:`„${teacherName}: Gute Frage. Wir gehen das Schritt für Schritt an — ruhig, klar und ohne Hektik.“`,
+          planPrompt:"Worauf willst du dich in diesem Gespräch fokussieren?",
+          planA:{ label:"Ich brauche einen schnellen Rettungsplan für festgefahrene Quests.", response:"„Stoppen, Zielsatz formulieren, den kleinsten verifizierbaren Schritt ausführen.“" },
+          planB:{ label:"Wie erkenne ich früh, dass mein Ansatz falsch ist?", response:"„Wenn du viel tippst, aber kein neues Wissen gewinnst, bist du im Tunnel.“" },
+          learnA:{ label:"Ich möchte fachlich tiefer verstehen, statt nur 'durchzukommen'.", response:"„Genau das ist der Unterschied zwischen kurzfristigem Fix und echter Kompetenz.“" },
+          learnB:{ label:"Wie trainiere ich Ruhe in Prüfungsphasen?", response:"„Vorbereitung als Routine, nicht als Ausnahme. Rituale schlagen Hektik.“" },
+          talkA:{ label:"Wie bleiben Sie in stressigen Wochen gelassen?", response:"„Ich priorisiere nach Wirkung, nicht nach Lautstärke.“" },
+          talkB:{ label:"Was schätzen Sie bei Schüler*innen am meisten?", response:"„Saubere Fragen. Gute Fragen zeigen bereits gutes Denken.“" }
+        },
+        {
+          intro:`„${teacherName}: Erzähl kurz, wo du hängst. Dann finden wir direkt einen sinnvollen nächsten Schritt.“`,
+          planPrompt:"Welchen Modus brauchst du jetzt?",
+          planA:{ label:"Pragmatisch: Was ist mein nächster sicherer Schritt?", response:"„Ort bestimmen, relevante Datei lesen, Ergebnis gegen Questziel prüfen.“" },
+          planB:{ label:"Strategisch: Wie baue ich mir eine stabile Arbeitsroutine?", response:"„Arbeite in Mikrozyklen mit kurzem Review nach jedem Abschnitt.“" },
+          learnA:{ label:"Wie verbessere ich mein technisches Denken langfristig?", response:"„Nicht nur Antworten sammeln, sondern Muster erkennen und notieren.“" },
+          learnB:{ label:"Wie werde ich sicherer beim Erklären von Lösungen?", response:"„Erkläre deinen Weg laut in drei Sätzen: Ausgangslage, Aktion, Ergebnis.“" },
+          talkA:{ label:"Welche Gewohnheit macht im Alltag den größten Unterschied?", response:"„Vor jedem Schritt kurz prüfen: Dient das meinem Ziel oder nur meinem Aktionismus?“" },
+          talkB:{ label:"Was würden Sie mir als Standardregel mitgeben?", response:"„Präzision vor Tempo. Tempo kommt mit Routine von allein.“" }
+        }
+      ];
+
+      const style = teacherStyles[hash % teacherStyles.length];
+      return {
+        intro: style.intro,
+        nodes: {
+          start: { prompt:"Wie antwortest du?", choices:[
+            { label: style.planA.label, response: style.planA.response, next:"plan" },
+            { label: style.learnA.label, response: style.learnA.response, next:"learning" },
+            { label: style.talkA.label, response: style.talkA.response, next:"smalltalk" }
+          ]},
+          plan: { prompt: style.planPrompt, choices:[
+            { label: style.planB.label, response: style.planB.response, next:"plan_deep" },
+            { label:"Gib mir bitte eine 3-Punkte-Checkliste.", response:"„1) Auftrag klären. 2) Konkreten Schritt ausführen. 3) Ergebnis validieren.“", next:"plan_deep" },
+            { label:"Reicht mir erstmal, ich setze das direkt um.", response:"„Sehr gut. Sauber anfangen ist die halbe Lösung.“", next:"endnode" }
+          ]},
+          plan_deep: { prompt:"Noch eine Ebene tiefer?", choices:[
+            { label:"Ja: Wie teile ich große Aufgaben sinnvoll auf?", response:"„Orientierung, Umsetzung, Kontrolle — und nach jedem Block ein sichtbares Ergebnis.“", next:"endnode" },
+            { label:"Nein, ich hab jetzt einen klaren Plan.", response:"„Perfekt. Dann arbeite Schritt für Schritt.“", next:"endnode" }
+          ]},
+          learning: { prompt:"Welcher Lernaspekt hilft dir jetzt am meisten?", choices:[
+            { label: style.learnB.label, response: style.learnB.response, next:"learning_deep" },
+            { label:"Wie baue ich mir ein eigenes Nachschlage-System auf?", response:"„Dokumentiere gelöste Probleme kurz mit Ursache, Aktion, Ergebnis.“", next:"learning_deep" },
+            { label:"Danke, das reicht für jetzt.", response:"„Top. Hauptsache, du setzt es direkt in Handlung um.“", next:"endnode" }
+          ]},
+          learning_deep: { prompt:"Letzter Lern-Impuls?", choices:[
+            { label:"Ja, bitte einen konkreten Übungsmodus.", response:"„Nimm einen Befehl pro Session und teste gezielt Varianten statt alles gleichzeitig.“", next:"endnode" },
+            { label:"Nein, ich starte direkt mit den Tipps.", response:"„Sehr gut. Routine entsteht durchs Tun.“", next:"endnode" }
+          ]},
+          smalltalk: { prompt:"Noch eine Frage?", choices:[
+            { label: style.talkB.label, response: style.talkB.response, next:"endnode" },
+            { label:"Was wäre ein guter Standardsatz gegen Chaos?", response:"„Erst verstehen, dann ausführen, dann kontrollieren.“", next:"endnode" }
+          ]},
+          endnode: { prompt:"Zum Abschluss?", choices:[
+            { label:"Danke, das war hilfreich.", end:true, response:"„Gern. Meld dich, wenn du beim nächsten Schritt hängst.“" },
+            { label:"Ich probiere es jetzt direkt aus.", end:true, response:"„Sehr gute Entscheidung — direkt anwenden verankert es am besten.“" }
+          ]}
+        }
+      };
+    }
+
+    const studentStyles = [
+      {
+        intro:`„${shortName} dreht sich zu dir: 'Yo, was geht gerade ab?'“`,
+        helpA:{ label:"Ich hänge fest — kannst du kurz mitdenken?", response:"„Klar. Mit Plan ist das direkt weniger wild.“" },
+        helpB:{ label:"Was war dein bester Move gegen Quest-Chaos?", response:"„Ich fang immer mit einem Mini-Schritt an und check danach sofort den Stand.“" },
+        vibeA:{ label:"Wie bleibst du entspannt, wenn alles gleichzeitig kommt?", response:"„Ich nehme erst eine Sache auseinander, nicht fünf auf einmal.“" },
+        vibeB:{ label:"Welche Gewohnheit hat dir am meisten geholfen?", response:"„Kurz notieren, was funktioniert hat. Dann muss ich's nicht jedes Mal neu erfinden.“" }
+      },
+      {
+        intro:`„${shortName} hebt die Hand zum Gruß: 'Brauchst du kurz Backup?'“`,
+        helpA:{ label:"Ja, ich brauche einen klaren nächsten Schritt.", response:"„Safe. Erst Standort checken, dann gezielt suchen, dann validieren.“" },
+        helpB:{ label:"Wie vermeide ich dieselben Fehler immer wieder?", response:"„Nach jedem Fail kurz Ursache notieren. Das spart später richtig Zeit.“" },
+        vibeA:{ label:"Wie gehst du mit Frust in Abgaben um?", response:"„Kurz resetten, dann klein neu starten. Sonst driftet man komplett weg.“" },
+        vibeB:{ label:"Was motiviert dich bei nervigen Aufgaben?", response:"„Mini-Erfolge sammeln. Die ziehen dich durch den Rest.“" }
+      },
+      {
+        intro:`„${shortName} grinst: 'Lass kurz sortieren, was dein nächster Win sein kann.'“`,
+        helpA:{ label:"Ich brauche Struktur, nicht noch mehr Inputs.", response:"„Fair. Dann machen wir nur einen klaren Pfad statt zehn Ideen.“" },
+        helpB:{ label:"Hast du eine schnelle Methode für Fokus?", response:"„Ja: Timer an, ein Ziel, null Kontextwechsel bis der Timer klingelt.“" },
+        vibeA:{ label:"Wie bleibst du bei Prüfungsstress stabil?", response:"„Mit festen Abläufen. Dann ist der Kopf nicht komplett auf Alarm.“" },
+        vibeB:{ label:"Was sagst du dir, wenn's gar nicht läuft?", response:"„Ein sauberer Schritt reicht erstmal. Perfekt muss es jetzt nicht sein.“" }
+      }
+    ];
+
+    const style = studentStyles[hash % studentStyles.length];
+    return {
+      intro: style.intro,
+      nodes: {
+        start: { prompt:"Wie reagierst du?", choices:[
+          { label: style.helpA.label, response: style.helpA.response, next:"help" },
+          { label:"Ich will lernen, das nächstes Mal selbst zu lösen.", response:"„Stark. Dann bauen wir dir eine eigene Mini-Methode.“", next:"growth" },
+          { label: style.vibeA.label, response: style.vibeA.response, next:"vibe" }
+        ]},
+        help: { prompt:"Was brauchst du konkret?", choices:[
+          { label: style.helpB.label, response: style.helpB.response, next:"endnode" },
+          { label:"Gib mir eine 3-Schritte-Notfallroutine.", response:"„Ziel lesen, einen Schritt machen, Ergebnis prüfen. Dann wiederholen.“", next:"endnode" }
+        ]},
+        growth: { prompt:"Worauf willst du langfristig gehen?", choices:[
+          { label:"Mehr Selbstständigkeit bei kniffligen Aufgaben.", response:"„Dann dokumentierst du ab heute kurz jeden gelösten Knoten.“", next:"endnode" },
+          { label:"Sicherer werden beim Erklären vor anderen.", response:"„Erklär deinen Lösungsweg erst dir selbst laut in 3 Sätzen.“", next:"endnode" }
+        ]},
+        vibe: { prompt:"Noch eine kurze Frage?", choices:[
+          { label: style.vibeB.label, response: style.vibeB.response, next:"endnode" },
+          { label:"Hast du einen Satz, der sofort den Druck rausnimmt?", response:"„Nicht alles auf einmal. Ein klarer Schritt reicht für jetzt.“", next:"endnode" }
+        ]},
+        endnode: { prompt:"Zum Abschluss?", choices:[
+          { label:"Danke dir, das hilft mir echt.", end:true, response:"„Gern. Ping mich, wenn du wieder Input brauchst.“" },
+          { label:"Ich setze das jetzt direkt um.", end:true, response:"„Nice. Genau so kommt Momentum rein.“" }
+        ]}
+      }
+    };
+  }
+
+  function renderNpcDialogNode(npcId, npc){
+    const tree = buildNpcDialogTree(npcId, npc);
+    const node = tree.nodes[state.npcDialog.nodeId || "start"] || tree.nodes.start;
+    const speakerName = getDialogSpeakerName(npcId, npc);
+    let out = `🗨️ ${speakerName} — ${npc.role}
+`;
+    if((state.npcDialog.nodeId || "start") === "start") out += `${tree.intro}
+
+`;
+    out += `${node.prompt}
+`;
+    node.choices.forEach((choice, idx)=>{ out += `  (${idx+1}) ${choice.label}
+`; });
+    out += `  (0) Gespräch beenden
+
+Eingabe: choose <nummer>`;
+    return out;
   }
 
   function grepTrigger(pattern, outText){
@@ -722,6 +918,12 @@ talk harries  /  talk pietsch`;
   function cmdImpl(line, stdin=null){
     const trimmed = line.trim();
     if(!trimmed) return { ok:true, out:"" };
+
+    const firstToken = trimmed.split(/\s+/, 1)[0];
+    if(state.npcDialog && state.npcDialog.active && firstToken !== "choose"){
+      resetNpcDialog();
+      saveState();
+    }
 
     if(state.phase >= 3 && trimmed.startsWith("./")){
       const rest = trimmed.slice(2).trim();
@@ -2550,6 +2752,15 @@ if(state.flags && state.flags.system_fixed && Math.random() < 0.20){
           saveState();
           return { ok:true, out };
         }
+// generische NPCs (keine Sidequestgeber, nicht Winkelmann) bekommen Mehrstufen-Dialoge
+        if(!NPC_DIALOG_EXCLUDED.has(id)){
+          state.npcDialog = { active:true, npcId:id, nodeId:"start" };
+          out = renderNpcDialogNode(id, npc);
+          saveState();
+          renderObjectives();
+          return { ok:true, out };
+        }
+
 // fallback: if it's a teacher NPC, don't be boring 😄
           const inSchool = String(state.cwd||"").startsWith("/school");
           const studentIds = new Set(["noah","emma","leo"]);
@@ -2993,9 +3204,28 @@ case "reset":{
 
       
       case "choose":{
-        if(!state.sidequest || !state.sidequest.unlocked) return { ok:false, out:"choose: erst Winkelmann finden." };
         const pick = (args[0]||"").trim();
         if(!pick) return { ok:false, out:"Usage: choose <number> (z.B. choose 3)" };
+        if(state.npcDialog && state.npcDialog.active){
+          const npcId = state.npcDialog.npcId;
+          const npc = NPCS[npcId];
+          const speakerName = getDialogSpeakerName(npcId, npc);
+          const tree = buildNpcDialogTree(npcId, npc);
+          const node = tree.nodes[state.npcDialog.nodeId || "start"] || tree.nodes.start;
+          const idx = Number(pick);
+          if(idx===0){ resetNpcDialog(); saveState(); return { ok:true, out:`🗨️ ${speakerName}
+„Alles klar, bis später.“` }; }
+          if(!Number.isInteger(idx) || idx<1 || idx>node.choices.length) return { ok:false, out:`choose: In diesem Gespräch: choose 0-${node.choices.length}.` };
+          const choice = node.choices[idx-1];
+          let out = `Du: „${choice.label}“
+${speakerName}: ${choice.response}`;
+          if(choice.end){ resetNpcDialog(); saveState(); return { ok:true, out }; }
+          state.npcDialog.nodeId = choice.next || "start";
+          out += "\n\n" + renderNpcDialogNode(npcId, npc);
+          saveState();
+          return { ok:true, out };
+        }
+        if(!state.sidequest || !state.sidequest.unlocked) return { ok:false, out:"choose: erst Winkelmann finden." };
         if(state.sidequest.dialog !== "winkelmann") return { ok:false, out:"choose: Keine Auswahl aktiv. Tipp: talk winkelmann" };
         // Winkelmann: Kontext-Menüs (Netzwerk -> Befehle erklärt)
         const menu = state.sidequest.winkMenu || "main";
