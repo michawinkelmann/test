@@ -190,6 +190,12 @@
       desc:"Tastaturen klicken wie ein E‑Sport-Finale. Ein Monitor zeigt: „IServ: GLITCH MODE“. Okay, jetzt wird’s wild.",
       // Ziele werden absichtlich NICHT dauerhaft im HUD angezeigt (zu viel Spoiler).
       extra:"" },
+    "/school/mensa": { name:"Mensa — Loot & Lunch", tag:"School", mood:"school",
+      desc:"Tabletts klappern, alle reden durcheinander und irgendwo kippt safe gleich Apfelschorle um. Klassische Mensa-Quest-Atmosphäre.",
+      extra:"cat menu.txt  ·  cat quest.txt  ·  talk jansen" },
+    "/school/turnhalle": { name:"Turnhalle — Bewegung & Chaos", tag:"School", mood:"school",
+      desc:"Schuhe quietschen auf dem Hallenboden, ein Ball fliegt random ins Aus und jemand ruft schon wieder NOCHMAL!",
+      extra:"cat plan.txt  ·  talk wiebe" },
     "/server_gate": { name:"Server-Gate — Boss-Tür", tag:"Phase 1 Boss", mood:"server",
       desc:"Eine ASCII-Tür blockt dich wie ein Endgegner. Oben steht: ACCESS: KEY REQUIRED. Gate ist literally ein Türsteher.",
       extra:"Tipp: cat gate.txt" },
@@ -468,8 +474,9 @@
     renderPhaseCommands();
     renderWorldMap();
 
+    const currentRoom = state.cwd;
     const npcsHere = Object.entries(NPCS)
-      .filter(([id,n])=>n.at.includes(lp))
+      .filter(([id,n])=>n.at.includes(currentRoom))
       .map(([id,n])=>`${n.name}`);
     el("locNPCs").textContent = npcsHere.length ? ("NPCs hier: " + npcsHere.join(" · ") + "  →  talk <name>") : "NPCs hier: —";
     if(npcsHere.length && !state.npcTipShown){
