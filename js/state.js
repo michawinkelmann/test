@@ -52,6 +52,7 @@
     },
     jobArc: { active:false, stage:0, quests:{ snackmaster:false, ars:false, ohlendorf:false, berndt:false, cms:false }, startedAt:null },
     superpc: { active:false, returnCwd:"" },
+    npcDialog: { active:false, npcId:null, nodeId:null },
     mapVisited: ["/home/player"],
     clippy: { lastUsedAt: 0 }
   };
@@ -69,6 +70,7 @@
         merged.mentor = Object.assign({}, INITIAL_STATE.mentor, (s.mentor||{}));
         merged.sidequest = Object.assign({}, INITIAL_STATE.sidequest, (s.sidequest||{}));
         merged.jobArc = Object.assign({}, INITIAL_STATE.jobArc, (s.jobArc||{}));
+        merged.npcDialog = Object.assign({}, INITIAL_STATE.npcDialog, (s.npcDialog||{}));
         return merged;
       }
 
@@ -78,6 +80,7 @@
       s.sidequest = Object.assign({}, INITIAL_STATE.sidequest, (s.sidequest||{}));
       s.jobArc = Object.assign({}, INITIAL_STATE.jobArc, (s.jobArc||{}));
       s.jobArc.quests = Object.assign({}, INITIAL_STATE.jobArc.quests, (s.jobArc.quests||{}));
+      s.npcDialog = Object.assign({}, INITIAL_STATE.npcDialog, (s.npcDialog||{}));
       if(!Array.isArray(s.mapVisited)) s.mapVisited = ["/home/player"];
       s.clippy = Object.assign({}, INITIAL_STATE.clippy, (s.clippy||{}));
       return s;

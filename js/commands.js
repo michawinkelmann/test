@@ -471,6 +471,90 @@ function allowedCommands(){
     return { start, pattern: stripQuotes(pattern) };
   }
 
+  const NPC_DIALOG_EXCLUDED = new Set(["winkelmann","harries","pietsch","beamter","jansen","wiebe","neele","tom","holger","noah","emma","leo"]);
+
+  function resetNpcDialog(){
+    if(!state.npcDialog || typeof state.npcDialog !== "object") state.npcDialog = { active:false, npcId:null, nodeId:null };
+    state.npcDialog.active = false;
+    state.npcDialog.npcId = null;
+    state.npcDialog.nodeId = null;
+  }
+
+  function getNpcDialogType(npcId, npc){
+    const role = String((npc && npc.role) || "").toLowerCase();
+    if(role.includes("schüler") || role.includes("schueler") || /^s_/i.test(npcId)) return "student";
+    return "teacher";
+  }
+
+  function pickNpcLine(npcId, options){
+    let h = 0;
+    for(const ch of String(npcId||"")) h = (h * 33 + ch.charCodeAt(0)) >>> 0;
+    return options[h % options.length];
+  }
+
+  function buildNpcDialogTree(npcId, npc){
+    const shortName = String((npc && npc.name) || npcId || "NPC").split(" ")[0];
+    if(getNpcDialogType(npcId, npc) === "teacher"){
+      return {
+        intro: `„${shortName} klappt einen Ordner zu und sieht dich aufmerksam an.“`,
+        nodes: {
+          start: { prompt:"Wie antwortest du?", choices:[
+            { label: pickNpcLine(npcId, ["Ich brauche einen klaren Plan für den nächsten Schritt.","Können Sie mir kurz sagen, wie ich strukturiert vorgehen soll?","Ich hänge fest - was wäre jetzt der saubere Move?"]), response:"„Erst Ziel verstehen, dann bewusst einen Schritt nach dem anderen.“", next:"plan" },
+            { label:"Kurzer Smalltalk: Ist heute eher ruhig oder Vollchaos?", response:"„Geordnetes Chaos, aber mit Struktur bleibt es beherrschbar.“", next:"smalltalk" }
+          ]},
+          plan: { prompt:"Und jetzt?", choices:[
+            { label:"Haben Sie eine Mini-Checkliste in drei Schritten?", response:"„1) Hinweis lesen. 2) Ort und Datei prüfen. 3) Ergebnis direkt verifizieren.“", next:"endnode" },
+            { label:"Was ist hier der häufigste Fehler?", response:"„Hektik. Viele tippen, bevor sie verstanden haben, was gefragt ist.“", next:"endnode" }
+          ]},
+          smalltalk: { prompt:"Gespräch fortsetzen?", choices:[
+            { label:"Okay, zurück zur Sache: Ein letzter Tipp?", response:"„Sauber arbeiten schlägt hektisches Klicken. Immer.“", next:"endnode" },
+            { label:"Danke, das reicht mir erstmal.", end:true, response:"„Alles klar. Viel Erfolg." }
+          ]},
+          endnode: { prompt:"Zum Abschluss?", choices:[
+            { label:"Danke, ich setze das jetzt so um.", end:true, response:"„Sehr gut. Melde dich, wenn die nächste Hürde kommt.“" },
+            { label:"Alles klar, ich probiere es direkt.", end:true, response:"„Guter Plan. Ruhig und sauber.“" }
+          ]}
+        }
+      };
+    }
+
+    return {
+      intro: `„${shortName} rückt den Stuhl zurecht und wirkt erleichtert, dass jemand nachfragt.“`,
+      nodes: {
+        start: { prompt:"Wie antwortest du?", choices:[
+          { label: pickNpcLine(npcId, ["Was ist gerade dein größtes Problem hier?","Wenn du willst, gehen wir das kurz zusammen an.","Kurzer Check: Wo hängt es bei dir genau?"]), response:"„Ich brauche nur einen guten Einstieg, dann läuft's meistens.“", next:"help" },
+          { label:"Erstmal tief durchatmen, dann sortieren wir das.", response:"„Fair. Mit Plan ist das direkt weniger stressig.“", next:"help" }
+        ]},
+        help: { prompt:"Wie geht's weiter?", choices:[
+          { label:"Ich geb dir eine Mini-Checkliste für den nächsten Move.", response:"„Perfekt. Checkliste klingt nach weniger Panik und mehr Progress.“", next:"endnode" },
+          { label:"Was wäre jetzt ein sinnvoller erster kleiner Schritt?", response:"„Datei finden, lesen, dann erst tippen. Sonst verzettel ich mich.“", next:"endnode" }
+        ]},
+        endnode: { prompt:"Zum Abschluss?", choices:[
+          { label:"Nice, dann viel Erfolg - du packst das.", end:true, response:"„Danke, das war gerade ein guter Push.“" },
+          { label:"Wenn's wieder hängt, reden wir nochmal.", end:true, response:"„Safe. Dann machen wir Runde zwei.“" }
+        ]}
+      }
+    };
+  }
+
+  function renderNpcDialogNode(npcId, npc){
+    const tree = buildNpcDialogTree(npcId, npc);
+    const node = tree.nodes[state.npcDialog.nodeId || "start"] || tree.nodes.start;
+    let out = `🗨️ ${npc.name} — ${npc.role}
+`;
+    if((state.npcDialog.nodeId || "start") === "start") out += `${tree.intro}
+
+`;
+    out += `${node.prompt}
+`;
+    node.choices.forEach((choice, idx)=>{ out += `  (${idx+1}) ${choice.label}
+`; });
+    out += `  (0) Gespräch beenden
+
+Eingabe: choose <nummer>`;
+    return out;
+  }
+
   function grepTrigger(pattern, outText){
     // FRAG1 quest: accept both the exact tag and broader searches like TOKEN/token.
     // We only mark progress when the output looks like it comes from frag_1.log context.
@@ -751,6 +835,8 @@ talk harries  /  talk pietsch`;
 
     const parts = trimmed.split(/\s+/);
     const c = parts[0];
+
+    if(state.npcDialog && state.npcDialog.active && c !== "choose"){ resetNpcDialog(); saveState(); }
 
     // Registry-Lock: block commands that exist but are not yet unlocked
     const allowedNow = allowedCommands();
@@ -2550,6 +2636,15 @@ if(state.flags && state.flags.system_fixed && Math.random() < 0.20){
           saveState();
           return { ok:true, out };
         }
+// generische NPCs (keine Sidequestgeber, nicht Winkelmann) bekommen Mehrstufen-Dialoge
+        if(!NPC_DIALOG_EXCLUDED.has(id)){
+          state.npcDialog = { active:true, npcId:id, nodeId:"start" };
+          out = renderNpcDialogNode(id, npc);
+          saveState();
+          renderObjectives();
+          return { ok:true, out };
+        }
+
 // fallback: if it's a teacher NPC, don't be boring 😄
           const inSchool = String(state.cwd||"").startsWith("/school");
           const studentIds = new Set(["noah","emma","leo"]);
@@ -2993,9 +3088,27 @@ case "reset":{
 
       
       case "choose":{
-        if(!state.sidequest || !state.sidequest.unlocked) return { ok:false, out:"choose: erst Winkelmann finden." };
         const pick = (args[0]||"").trim();
         if(!pick) return { ok:false, out:"Usage: choose <number> (z.B. choose 3)" };
+        if(state.npcDialog && state.npcDialog.active){
+          const npcId = state.npcDialog.npcId;
+          const npc = NPCS[npcId];
+          const tree = buildNpcDialogTree(npcId, npc);
+          const node = tree.nodes[state.npcDialog.nodeId || "start"] || tree.nodes.start;
+          const idx = Number(pick);
+          if(idx===0){ resetNpcDialog(); saveState(); return { ok:true, out:`🗨️ ${npc.name}
+„Alles klar, bis später.“` }; }
+          if(!Number.isInteger(idx) || idx<1 || idx>node.choices.length) return { ok:false, out:`choose: In diesem Gespräch: choose 0-${node.choices.length}.` };
+          const choice = node.choices[idx-1];
+          let out = `Du: „${choice.label}“
+${npc.name}: ${choice.response}`;
+          if(choice.end){ resetNpcDialog(); saveState(); return { ok:true, out }; }
+          state.npcDialog.nodeId = choice.next || "start";
+          out += "\n\n" + renderNpcDialogNode(npcId, npc);
+          saveState();
+          return { ok:true, out };
+        }
+        if(!state.sidequest || !state.sidequest.unlocked) return { ok:false, out:"choose: erst Winkelmann finden." };
         if(state.sidequest.dialog !== "winkelmann") return { ok:false, out:"choose: Keine Auswahl aktiv. Tipp: talk winkelmann" };
         // Winkelmann: Kontext-Menüs (Netzwerk -> Befehle erklärt)
         const menu = state.sidequest.winkMenu || "main";
