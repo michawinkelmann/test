@@ -368,16 +368,16 @@ NAMENSGEBUNG
 function allowedCommands(){
     let base = [];
     if(state.phase === 1){
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","unlock","talk","quests","inventory","reset","man"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","unlock","talk","choose","quests","inventory","reset","man"];
     } else if(state.phase === 2){
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","talk","quests","inventory","reset","man","find"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","talk","choose","quests","inventory","reset","man","find"];
     } else if(state.phase === 3){
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","quests","inventory","reset","man","chmod"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","choose","quests","inventory","reset","man","chmod"];
     } else if(state.phase === 4){
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","quests","inventory","reset","man","chmod","ps","top","kill","history","alias","mentor_clear"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","choose","quests","inventory","reset","man","chmod","ps","top","kill","history","alias","mentor_clear"];
     } else if(state.phase >= 5){
       // Phase 5: Alles aus 1–4 ist freigeschaltet (Real Life).
-      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","quests","inventory","reset","man","chmod","ps","top","kill","history","alias","mentor_clear"];
+      base = ["help","hint","ls","cd","pwd","cat","clear","echo","grep","mkdir","touch","rm","cp","mv","find","talk","choose","quests","inventory","reset","man","chmod","ps","top","kill","history","alias","mentor_clear"];
     }
 
     // "assemble" is only meaningful after all fragments are collected
@@ -387,7 +387,7 @@ function allowedCommands(){
 
 
     if(state.sidequest && state.sidequest.unlocked){
-      base.push("connect","choose");
+      base.push("connect");
       if(state.superpc && state.superpc.active){
         base.push("ping","ssh","scp","logwipe","netmap","exit");
       }
@@ -499,16 +499,56 @@ function allowedCommands(){
         intro: `„${shortName} klappt einen Ordner zu und sieht dich aufmerksam an.“`,
         nodes: {
           start: { prompt:"Wie antwortest du?", choices:[
-            { label: pickNpcLine(npcId, ["Ich brauche einen klaren Plan für den nächsten Schritt.","Können Sie mir kurz sagen, wie ich strukturiert vorgehen soll?","Ich hänge fest - was wäre jetzt der saubere Move?"]), response:"„Erst Ziel verstehen, dann bewusst einen Schritt nach dem anderen.“", next:"plan" },
-            { label:"Kurzer Smalltalk: Ist heute eher ruhig oder Vollchaos?", response:"„Geordnetes Chaos, aber mit Struktur bleibt es beherrschbar.“", next:"smalltalk" }
+            { label: pickNpcLine(npcId, ["Ich brauche einen klaren Plan für den nächsten Schritt.","Können Sie mir kurz sagen, wie ich strukturiert vorgehen soll?","Ich hänge fest - was wäre jetzt der saubere Move?"]), response:"„Gute Frage. Lass uns das wie ein kleines Einsatzprotokoll angehen, nicht im Blindflug.“", next:"plan" },
+            { label:"Ich will fachlich besser werden, nicht nur irgendwie durchkommen.", response:"„Genau die Haltung bringt dich langfristig nach vorn. Dann reden wir über Lernstrategie statt Notfallmodus.“", next:"learning" },
+            { label:"Kurzer Smalltalk: Wie bleiben Sie bei dem ganzen Chaos ruhig?", response:"„Ich teile Probleme in kleine, bearbeitbare Stücke. Das senkt den Puls sofort.“", next:"smalltalk" }
           ]},
-          plan: { prompt:"Und jetzt?", choices:[
-            { label:"Haben Sie eine Mini-Checkliste in drei Schritten?", response:"„1) Hinweis lesen. 2) Ort und Datei prüfen. 3) Ergebnis direkt verifizieren.“", next:"endnode" },
-            { label:"Was ist hier der häufigste Fehler?", response:"„Hektik. Viele tippen, bevor sie verstanden haben, was gefragt ist.“", next:"endnode" }
+          plan: { prompt:"Welchen Teil vom Vorgehen willst du vertiefen?", choices:[
+            { label:"Mini-Checkliste: Was mache ich in den ersten 60 Sekunden?", response:"„1) Zielverb markieren (finden/lesen/reparieren). 2) Ort prüfen. 3) Erst dann tippen. Alles andere ist Rate-Mode.“", next:"plan_checklist" },
+            { label:"Was ist der häufigste Fehler in Quests?", response:"„Nicht Technik, sondern Tempo: Viele klicken hektisch los und prüfen zu spät, was eigentlich verlangt war.“", next:"plan_mistakes" },
+            { label:"Wie merke ich, dass ich mich verrannt habe?", response:"„Wenn du zehn Kommandos eingibst, ohne neues Wissen zu gewinnen. Dann stoppen, neu lesen, kleiner Schritt.“", next:"plan_recover" }
+          ]},
+          plan_checklist: { prompt:"Willst du eine Ebene tiefer?", choices:[
+            { label:"Ja — und was mache ich direkt nach dem ersten Treffer?", response:"„Treffer validieren: Dateiname, Pfad und Inhalt gegen die Quest abgleichen. Erst dann als Fortschritt werten.“", next:"plan_deep" },
+            { label:"Reicht. Ich teste das jetzt direkt.", response:"„Sehr gut. Kurz denken, dann präzise handeln.“", next:"endnode" }
+          ]},
+          plan_mistakes: { prompt:"Möchtest du Gegenmaßnahmen?", choices:[
+            { label:"Ja, bitte konkrete Anti-Fehler-Regeln.", response:"„Regel 1: Nicht raten. Regel 2: Nach jedem Schritt mit quests prüfen. Regel 3: Wenn unklar, info sammeln statt herumprobieren.“", next:"plan_deep" },
+            { label:"Klingt logisch. Ich achte drauf.", response:"„Genau. Kontrolle vor Geschwindigkeit.“", next:"endnode" }
+          ]},
+          plan_recover: { prompt:"Wie willst du aus dem Tunnel raus?", choices:[
+            { label:"Gib mir einen Reset-Ablauf in 3 Punkten.", response:"„1) Zielsatz laut formulieren. 2) Relevanten Ordner öffnen. 3) Einen einzigen verifizierbaren Schritt ausführen.“", next:"plan_deep" },
+            { label:"Ich mache selbst einen kurzen Neustart.", response:"„Perfekt. Ein sauberer Neustart spart oft fünf Minuten Chaos.“", next:"endnode" }
+          ]},
+          plan_deep: { prompt:"Noch ein Werkzeug für schwierige Aufgaben?", choices:[
+            { label:"Ja: Wie teile ich große Aufgaben sinnvoll auf?", response:"„In Mikroziele: Orientierung, Fundstelle, Umsetzung, Kontrolle. Nach jedem Block ein sichtbares Ergebnis sichern.“", next:"endnode" },
+            { label:"Nein, das reicht. Danke.", response:"„Stark. Du hast jetzt eine belastbare Routine.“", next:"endnode" }
+          ]},
+          learning: { prompt:"Welcher Lernbereich interessiert dich gerade am meisten?", choices:[
+            { label:"Technik: Ich will Kommandos wirklich verstehen, nicht auswendig lernen.", response:"„Dann arbeite mit Warum-Fragen: Was verändert der Befehl, was bleibt gleich, woran erkenne ich Erfolg?“", next:"learning_tech" },
+            { label:"Prüfungen: Wie lerne ich unter Zeitdruck sinnvoll?", response:"„Zeitdruck trainiert man mit kurzen, klaren Routinen — nicht mit Panik-Sprints.“", next:"learning_exam" },
+            { label:"Motivation: Wie halte ich durch, wenn's nervt?", response:"„Nicht auf Motivation warten. Mit Mini-Schritten starten, Motivation folgt oft erst danach.“", next:"learning_motivation" }
+          ]},
+          learning_tech: { prompt:"Technik tiefer besprechen?", choices:[
+            { label:"Ja, konkrete Methode bitte.", response:"„Nimm einen Befehl und teste drei Varianten. Dokumentiere jeweils: Eingabe, Ergebnis, typische Fehler. Das baut echtes Verständnis.“", next:"endnode" },
+            { label:"Ich probiere es erst einmal so.", response:"„Sehr gut — Lernen durch Rückmeldung ist hier Gold wert.“", next:"endnode" }
+          ]},
+          learning_exam: { prompt:"Zeitdruck-Strategie wählen:", choices:[
+            { label:"Wie teile ich knappe Zeit im Kopf sinnvoll ein?", response:"„40% Orientierung, 40% Umsetzung, 20% Kontrolle. Die letzten Minuten gehören immer der Prüfung deiner Ergebnisse.“", next:"endnode" },
+            { label:"Und wenn ich mitten drin blockiere?", response:"„Kurz parken, Teilaufgabe wechseln, dann mit frischem Blick zurück. Blockaden lösen sich oft über Bewegung im Problemraum.“", next:"endnode" }
+          ]},
+          learning_motivation: { prompt:"Was brauchst du davon gerade eher?", choices:[
+            { label:"Struktur statt Chaos.", response:"„Setz dir pro Session ein erreichbares Minimum. Erledigt ist besser als perfekt geplant und nie gestartet.“", next:"endnode" },
+            { label:"Mehr Selbstvertrauen.", response:"„Führe ein kleines Erfolgslog. Sichtbarer Fortschritt ist der beste Gegenspieler von Selbstzweifeln.“", next:"endnode" }
           ]},
           smalltalk: { prompt:"Gespräch fortsetzen?", choices:[
-            { label:"Okay, zurück zur Sache: Ein letzter Tipp?", response:"„Sauber arbeiten schlägt hektisches Klicken. Immer.“", next:"endnode" },
+            { label:"Und was hilft im Kollegium gegen Dauerstress?", response:"„Klare Absprachen und kurze Übergaben. Missverständnisse kosten mehr Energie als jede Aufgabe selbst.“", next:"smalltalk_deep" },
+            { label:"Okay, zurück zur Sache: ein letzter Praxis-Tipp?", response:"„Sauber arbeiten schlägt hektisches Klicken. Immer.“", next:"endnode" },
             { label:"Danke, das reicht mir erstmal.", end:true, response:"„Alles klar. Viel Erfolg." }
+          ]},
+          smalltalk_deep: { prompt:"Noch eine letzte Frage dazu?", choices:[
+            { label:"Wie bleibt man freundlich, wenn alles brennt?", response:"„Klare Sprache, kurze Sätze, keine Schuldzuweisungen im Stress. Das hält Teams handlungsfähig.“", next:"endnode" },
+            { label:"Nee, ich hab genug Input.", response:"„Gut dosiert ist klug. Dann viel Erfolg dir.“", next:"endnode" }
           ]},
           endnode: { prompt:"Zum Abschluss?", choices:[
             { label:"Danke, ich setze das jetzt so um.", end:true, response:"„Sehr gut. Melde dich, wenn die nächste Hürde kommt.“" },
@@ -522,12 +562,38 @@ function allowedCommands(){
       intro: `„${shortName} rückt den Stuhl zurecht und wirkt erleichtert, dass jemand nachfragt.“`,
       nodes: {
         start: { prompt:"Wie antwortest du?", choices:[
-          { label: pickNpcLine(npcId, ["Was ist gerade dein größtes Problem hier?","Wenn du willst, gehen wir das kurz zusammen an.","Kurzer Check: Wo hängt es bei dir genau?"]), response:"„Ich brauche nur einen guten Einstieg, dann läuft's meistens.“", next:"help" },
-          { label:"Erstmal tief durchatmen, dann sortieren wir das.", response:"„Fair. Mit Plan ist das direkt weniger stressig.“", next:"help" }
+          { label: pickNpcLine(npcId, ["Was ist gerade dein größtes Problem hier?","Wenn du willst, gehen wir das kurz zusammen an.","Kurzer Check: Wo hängt es bei dir genau?"]), response:"„Ich brauche meistens nur einen klaren Einstieg, dann läuft es.“", next:"help" },
+          { label:"Erstmal tief durchatmen, dann sortieren wir das.", response:"„Danke. Mit Plan ist das direkt weniger stressig.“", next:"help" },
+          { label:"Lass nicht nur das Problem fixen - lass auch lernen, wie du's nächstes Mal alleine packst.", response:"„Das wäre stark. Ich will nicht bei jedem kleinen Ding hängen bleiben.“", next:"growth" }
         ]},
-        help: { prompt:"Wie geht's weiter?", choices:[
-          { label:"Ich geb dir eine Mini-Checkliste für den nächsten Move.", response:"„Perfekt. Checkliste klingt nach weniger Panik und mehr Progress.“", next:"endnode" },
-          { label:"Was wäre jetzt ein sinnvoller erster kleiner Schritt?", response:"„Datei finden, lesen, dann erst tippen. Sonst verzettel ich mich.“", next:"endnode" }
+        help: { prompt:"Womit soll ich dir konkret helfen?", choices:[
+          { label:"Mini-Checkliste für den nächsten Move.", response:"„Perfekt. Checkliste klingt nach weniger Panik und mehr Progress.“", next:"help_checklist" },
+          { label:"Sinnvoller erster kleiner Schritt.", response:"„Datei finden, lesen, dann erst tippen. Sonst verzettel ich mich.“", next:"help_firststep" },
+          { label:"Fehleranalyse: warum hänge ich immer an derselben Stelle?", response:"„Ich springe oft zu schnell zwischen Sachen hin und her. Dann bleibt nichts hängen.“", next:"help_errors" }
+        ]},
+        help_checklist: { prompt:"Checkliste vertiefen?", choices:[
+          { label:"Ja, in drei ultra-kurzen Punkten.", response:"„1) Ziel lesen. 2) Eine Aktion ausführen. 3) Ergebnis prüfen. Dann erst weiter.“", next:"endnode" },
+          { label:"Nein, reicht. Ich probiere das direkt.", response:"„Mach ich. Klingt machbar.“", next:"endnode" }
+        ]},
+        help_firststep: { prompt:"Wie soll der erste Schritt aussehen?", choices:[
+          { label:"Ganz klein: nur Orientierung.", response:"„Okay: Erst gucken, wo ich bin und was da ist. Das nimmt Druck raus.“", next:"endnode" },
+          { label:"Direkt praktisch: eine konkrete Aktion.", response:"„Dann starte ich mit einem klaren Suchschritt statt random rumzutippen.“", next:"endnode" }
+        ]},
+        help_errors: { prompt:"Welche Gegenstrategie willst du testen?", choices:[
+          { label:"Fokus-Technik gegen Springen zwischen Aufgaben.", response:"„Ich bleibe fünf Minuten nur bei einem Teilproblem und notiere kurz das Ergebnis.“", next:"endnode" },
+          { label:"Stress-Regel für den Notfall.", response:"„Wenn ich hektisch werde: stoppen, Zielsatz sagen, dann nur einen Schritt.“", next:"endnode" }
+        ]},
+        growth: { prompt:"Was willst du langfristig verbessern?", choices:[
+          { label:"Selbstständigkeit.", response:"„Dann brauche ich eine Methode, nicht nur Lösungen.“", next:"growth_self" },
+          { label:"Sicherheit bei Präsentationen/Abgaben.", response:"„Ja, ich will vor anderen nicht direkt ins Stottern kommen.“", next:"growth_confidence" }
+        ]},
+        growth_self: { prompt:"Methode für Selbstständigkeit?", choices:[
+          { label:"Ja, bitte kurz und konkret.", response:"„Ich dokumentiere jeden gelösten Schritt: Problem, Aktion, Ergebnis. Das wird mein eigenes Nachschlagewerk.“", next:"endnode" },
+          { label:"Ich fang erstmal klein damit an.", response:"„Safe. Schon ein Eintrag pro Session hilft.“", next:"endnode" }
+        ]},
+        growth_confidence: { prompt:"Confidence-Plan wählen:", choices:[
+          { label:"Wie übe ich ohne extra Stress?", response:"„Kurz laut erklären, was ich gemacht habe — erst für mich, dann vor jemandem. So wird's normal.“", next:"endnode" },
+          { label:"Was mache ich, wenn ich Blackout bekomme?", response:"„Notfallanker: Ein Satz zur Ausgangslage, dann ein kleiner Schritt. Hauptsache wieder in Bewegung kommen.“", next:"endnode" }
         ]},
         endnode: { prompt:"Zum Abschluss?", choices:[
           { label:"Nice, dann viel Erfolg - du packst das.", end:true, response:"„Danke, das war gerade ein guter Push.“" },
