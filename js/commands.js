@@ -3510,6 +3510,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
         renderRewards();
         renderSidequestPanel();
         renderHeader();
+        try{ window.dispatchEvent(new CustomEvent("schwarmshell:state-updated")); }catch(e){}
       }
       lastOk = ok;
     }
@@ -3529,6 +3530,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     renderObjectives();
     renderRewards();
     renderSidequestPanel();
+    try{ window.dispatchEvent(new CustomEvent("schwarmshell:state-updated")); }catch(e){}
     if(withMessage){
       row("Hard reset. Neustart…", "warn");
       intro();

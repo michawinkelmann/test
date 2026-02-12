@@ -94,6 +94,39 @@ body{
       background: rgba(0,0,0,.12);
     }
     .card .content{ padding:14px; }
+
+    .cardHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      border-bottom:1px solid var(--line);
+      background: rgba(0,0,0,.12);
+      padding-right:10px;
+    }
+    .cardHeader h2{
+      border-bottom:none;
+      background:transparent;
+      flex:1 1 auto;
+    }
+    .clippyBtn{
+      flex:0 0 auto;
+      font-size:12px;
+      padding:8px 10px;
+      border-color: rgba(124,244,176,.4);
+      background: rgba(124,244,176,.12);
+      color: var(--text);
+    }
+    .clippyTooltip{
+      z-index: 1700;
+      width: min(520px, calc(100vw - 24px));
+    }
+    .clippyTooltip p{
+      margin:0 0 12px 0;
+      white-space:pre-wrap;
+      font-size:12px;
+      line-height:1.45;
+    }
     .locationImage{
       width:100%;
       aspect-ratio: 16/9;
