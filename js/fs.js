@@ -379,8 +379,8 @@
 
     const lines = [];
     const labelFor = (path)=>{
-      if(path === "/") return "/";
-      const name = path.split("/").pop();
+      const isRoot = path === "/" || path === "";
+      const name = isRoot ? "Schwarmstedt" : path.split("/").pop();
       const isCurrent = path === state.cwd;
       const wasVisited = visited.has(path);
       const marker = isCurrent ? "◉" : (wasVisited ? "●" : "○");
