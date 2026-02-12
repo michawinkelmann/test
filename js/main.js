@@ -173,6 +173,12 @@ function buildClippyContent(){
   return { key, objective: current, template };
 }
 
+function getOpenClippyObjectiveKey(){
+  const tooltip = el("clippyTooltip");
+  if(!tooltip) return "";
+  return String(tooltip.dataset.objectiveKey || "");
+}
+
 function positionClippyTooltip(){
   const tooltip = el("clippyTooltip");
   const btn = el("clippyHelperBtn");
@@ -191,6 +197,7 @@ function closeClippyTooltip(){
   tooltip.hidden = true;
   tooltip.style.top = "";
   tooltip.style.left = "";
+  delete tooltip.dataset.objectiveKey;
   btn.setAttribute("aria-expanded", "false");
 }
 
@@ -218,6 +225,7 @@ function showClippyTooltip(){
     <div class="clippyActions"><button class="btn" id="clippyCloseBtn" type="button">Okay</button></div>
   `;
   tooltip.hidden = false;
+  tooltip.dataset.objectiveKey = key;
   btn.setAttribute("aria-expanded", "true");
 
   ensureClippyState();
@@ -234,11 +242,16 @@ function syncClippyTooltip(){
   renderClippyAvailability();
   const tooltip = el("clippyTooltip");
   if(!tooltip || tooltip.hidden) return;
-  if(!getCurrentMainObjective() || getClippyCooldownRemainingMs() > 0){
+  const payload = buildClippyContent();
+  if(!payload || getClippyCooldownRemainingMs() > 0){
     closeClippyTooltip();
     return;
   }
-  showClippyTooltip();
+  if(payload.key !== getOpenClippyObjectiveKey()){
+    closeClippyTooltip();
+    return;
+  }
+  positionClippyTooltip();
 }
 
 function startNewGuidedGame(){
