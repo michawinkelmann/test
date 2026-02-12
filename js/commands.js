@@ -492,15 +492,40 @@ function allowedCommands(){
     return options[h % options.length];
   }
 
+  function getTeacherDialogName(npc){
+    const rawName = String((npc && npc.name) || "").trim();
+    const role = String((npc && npc.role) || "").toLowerCase();
+    const nameWithoutParens = rawName.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+    const tokens = nameWithoutParens.split(/\s+/).filter(Boolean);
+    const clean = tokens.filter(t => !/^(herr|frau|dr\.?|prof\.?|prof\.dr\.?)$/i.test(t));
+    const lastName = (clean[clean.length - 1] || tokens[tokens.length - 1] || "Lehrkraft").replace(/,$/, "");
+    const femaleFirstNames = new Set([
+      "mascha","maren","kathrin","johanna","dörte","ulrike","kristina","julia","karla","simona",
+      "agnieszka","chiara","silke","lena","lara","claudia"
+    ]);
+    const firstName = (clean[0] || tokens[0] || "").toLowerCase();
+    let honorific = "Herr";
+    if(/\bfrau\b/i.test(rawName)) honorific = "Frau";
+    else if(/\bherr\b/i.test(rawName)) honorific = "Herr";
+    else if(role.includes("leiterin") || role.includes("direktorstellvertreterin") || femaleFirstNames.has(firstName)) honorific = "Frau";
+    return `${honorific} ${lastName}`;
+  }
+
+  function getDialogSpeakerName(npcId, npc){
+    if(getNpcDialogType(npcId, npc) === "teacher") return getTeacherDialogName(npc);
+    return String((npc && npc.name) || npcId || "NPC");
+  }
+
   function buildNpcDialogTree(npcId, npc){
     const shortName = String((npc && npc.name) || npcId || "NPC").split(" ")[0];
+    const teacherName = getTeacherDialogName(npc);
     let hash = 0;
     for(const ch of String(npcId||"")) hash = (hash * 33 + ch.charCodeAt(0)) >>> 0;
 
     if(getNpcDialogType(npcId, npc) === "teacher"){
       const teacherStyles = [
         {
-          intro:`„${shortName} sortiert ein paar Notizen und nickt dir sachlich zu.“`,
+          intro:`„${teacherName}: Schön, dass du fragst. Lass uns dein Thema klar sortieren, dann wird es sofort leichter.“`,
           planPrompt:"Was passt gerade am besten zu deiner Lage?",
           planA:{ label:"Ich brauche eine klare Reihenfolge statt Trial-and-Error.", response:"„Dann gehst du immer in drei Schritten: Ziel lesen, Fundort prüfen, erst dann handeln.“" },
           planB:{ label:"Wie verhindere ich, mich in Nebensachen zu verlieren?", response:"„Arbeite mit einem Mini-Fokusfenster: ein Ziel, ein Kommando, ein Check.“" },
@@ -510,7 +535,7 @@ function allowedCommands(){
           talkB:{ label:"Was nervt Sie am meisten bei chaotischen Abgaben?", response:"„Unklare Benennung. Gute Struktur spart allen Zeit und Nerven.“" }
         },
         {
-          intro:`„${shortName} klappt einen Ordner zu und wirkt sofort voll bei der Sache.“`,
+          intro:`„${teacherName}: Gute Frage. Wir gehen das Schritt für Schritt an — ruhig, klar und ohne Hektik.“`,
           planPrompt:"Worauf willst du dich in diesem Gespräch fokussieren?",
           planA:{ label:"Ich brauche einen schnellen Rettungsplan für festgefahrene Quests.", response:"„Stoppen, Zielsatz formulieren, den kleinsten verifizierbaren Schritt ausführen.“" },
           planB:{ label:"Wie erkenne ich früh, dass mein Ansatz falsch ist?", response:"„Wenn du viel tippst, aber kein neues Wissen gewinnst, bist du im Tunnel.“" },
@@ -520,7 +545,7 @@ function allowedCommands(){
           talkB:{ label:"Was schätzen Sie bei Schüler*innen am meisten?", response:"„Saubere Fragen. Gute Fragen zeigen bereits gutes Denken.“" }
         },
         {
-          intro:`„${shortName} lehnt sich leicht vor: 'Okay, woran arbeiten wir?'“`,
+          intro:`„${teacherName}: Erzähl kurz, wo du hängst. Dann finden wir direkt einen sinnvollen nächsten Schritt.“`,
           planPrompt:"Welchen Modus brauchst du jetzt?",
           planA:{ label:"Pragmatisch: Was ist mein nächster sicherer Schritt?", response:"„Ort bestimmen, relevante Datei lesen, Ergebnis gegen Questziel prüfen.“" },
           planB:{ label:"Strategisch: Wie baue ich mir eine stabile Arbeitsroutine?", response:"„Arbeite in Mikrozyklen mit kurzem Review nach jedem Abschnitt.“" },
@@ -626,7 +651,8 @@ function allowedCommands(){
   function renderNpcDialogNode(npcId, npc){
     const tree = buildNpcDialogTree(npcId, npc);
     const node = tree.nodes[state.npcDialog.nodeId || "start"] || tree.nodes.start;
-    let out = `🗨️ ${npc.name} — ${npc.role}
+    const speakerName = getDialogSpeakerName(npcId, npc);
+    let out = `🗨️ ${speakerName} — ${npc.role}
 `;
     if((state.npcDialog.nodeId || "start") === "start") out += `${tree.intro}
 
@@ -3183,15 +3209,16 @@ case "reset":{
         if(state.npcDialog && state.npcDialog.active){
           const npcId = state.npcDialog.npcId;
           const npc = NPCS[npcId];
+          const speakerName = getDialogSpeakerName(npcId, npc);
           const tree = buildNpcDialogTree(npcId, npc);
           const node = tree.nodes[state.npcDialog.nodeId || "start"] || tree.nodes.start;
           const idx = Number(pick);
-          if(idx===0){ resetNpcDialog(); saveState(); return { ok:true, out:`🗨️ ${npc.name}
+          if(idx===0){ resetNpcDialog(); saveState(); return { ok:true, out:`🗨️ ${speakerName}
 „Alles klar, bis später.“` }; }
           if(!Number.isInteger(idx) || idx<1 || idx>node.choices.length) return { ok:false, out:`choose: In diesem Gespräch: choose 0-${node.choices.length}.` };
           const choice = node.choices[idx-1];
           let out = `Du: „${choice.label}“
-${npc.name}: ${choice.response}`;
+${speakerName}: ${choice.response}`;
           if(choice.end){ resetNpcDialog(); saveState(); return { ok:true, out }; }
           state.npcDialog.nodeId = choice.next || "start";
           out += "\n\n" + renderNpcDialogNode(npcId, npc);
