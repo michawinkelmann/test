@@ -873,6 +873,12 @@ talk harries  /  talk pietsch`;
     const trimmed = line.trim();
     if(!trimmed) return { ok:true, out:"" };
 
+    const firstToken = trimmed.split(/\s+/, 1)[0];
+    if(state.npcDialog && state.npcDialog.active && firstToken !== "choose"){
+      resetNpcDialog();
+      saveState();
+    }
+
     if(state.phase >= 3 && trimmed.startsWith("./")){
       const rest = trimmed.slice(2).trim();
       const parts = rest.split(/\s+/);
@@ -901,8 +907,6 @@ talk harries  /  talk pietsch`;
 
     const parts = trimmed.split(/\s+/);
     const c = parts[0];
-
-    if(state.npcDialog && state.npcDialog.active && c !== "choose"){ resetNpcDialog(); saveState(); }
 
     // Registry-Lock: block commands that exist but are not yet unlocked
     const allowedNow = allowedCommands();
