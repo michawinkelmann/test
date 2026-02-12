@@ -2562,63 +2562,41 @@ if(state.flags && state.flags.system_fixed && Math.random() < 0.20){
               ) && !isStudent(id, npc));
 
 if(isTeacher){
-            const lines = [
-              "„Setzt euch bitte. Wir fangen an. Und ja: auch du da hinten.“",
-              "„Handys weg. Das ist keine Twitch‑Chat‑Runde.“",
-              "„Wer jetzt sagt: ‘Ich war das nicht’, erklärt gleich den Lösungsweg.“",
-              "„Erst lesen, dann tippen. Das spart uns allen Zeit.“",
-              "„Ich zähle bis drei… und dann sehen wir weiter.“",
-              "„Das ist jetzt prüfungsrelevant. Sagen wir zumindest.“",
-              "„Wer fertig ist, hilft leise. Wir sind hier nicht auf dem Schulhof.“",
-              "„Ich sehe mehr, als ihr denkt. Auch im Terminal.“",
-              "„Wenn ihr nicht weiterkommt: strukturiert vorgehen, nicht panisch klicken.“",
-              "„Heute gilt: Qualität vor Geschwindigkeit.“",
-              "„Einmal tief durchatmen. Dann nochmal sauber von vorn.“",
-              "„Nein, ‘es hat gestern noch funktioniert’ ist keine Diagnose.“",
-              "„Wer eine Fehlermeldung hat, liest sie bitte laut. Ja, genau die.“",
-              "„Wir machen das in Schritten. Schritt eins: Ruhe.“",
-              "„Ich will nicht perfekt – ich will nachvollziehbar.“",
-              "„Wenn ihr fertig seid: kontrollieren. Nicht sofort abgeben.“",
-              "„Bitte keine privaten USB‑Sticks an Schulgeräte. Danke.“",
-              "„Ich erkläre das gern nochmal. Aber mit Aufmerksamkeit.“",
-              "„Wenn ihr’s nicht versteht: fragt. Dafür sind wir hier.“",
-              "„Wir sind heute im Modus: konzentriert, aber freundlich.“",
-              "„Das ist keine Zauberei. Nur Übung.“",
-              "„Ich hab gleich eine Überraschung: eine Aufgabe.“",
-              "„Wer meint ‘das brauch ich nie’: Ihr werdet euch wundern.“",
-              "„Kurzer Check: Wer kann zusammenfassen, was wir gerade tun?“",
-              "„Wir reden nicht gegen den Bildschirm. Wir reden über Lösungen.“",
-              "„Ich verlange nicht, dass ihr’s sofort könnt – aber dass ihr’s versucht.“",
-              "„Ab hier: leise Arbeitsphase.“",
-              "„Wer Hilfe braucht: Handzeichen. Kein Ruf‑Spam.“",
-              "„Und jetzt alle: speichern.“",
-              "„Heute ist ein guter Tag, um sauber zu arbeiten.“"
+            const hooks = [
+              "In dieser Klasse zählt vor allem Ruhe plus sauberes Vorgehen.",
+              "Wenn die Gruppe fokussiert bleibt, ist die Aufgabe heute gut machbar.",
+              "Ich sehe, dass viele gerade an denselben Stellen hängen.",
+              "Mit Struktur statt Hektik kommt ihr hier deutlich schneller weiter."
             ];
-            out += lines[Math.floor(Math.random()*lines.length)];
+            const hook = hooks[Math.floor(Math.random()*hooks.length)];
+            state.npcDialog = { active:true, npcId:id, step:"start", isTeacher:true, hook };
+            out += `„${hook}"
+
+Deine Antwort:
+  (1) „Können Sie mir kurz erklären, worauf ich zuerst achten soll?“
+  (2) „Haben Sie einen konkreten Plan für mich?“
+  (3) „Alles klar, ich probier's erstmal selbst.“
+  (0) Gespräch beenden
+
+Eingabe: choose <nummer>`;
           } else {
-            const lines = [
-              "„Yo. Was geht?“",
-              "„Ich bin nur kurz AFK im Kopf.“",
-              "„Same. Ich check’s auch nicht komplett.“",
-              "„Wenn du einen Tipp hast: her damit.“",
-              "„Ich glaub, ich hab’s gleich… maybe.“",
-              "„Ich warte auf den Plot‑Twist.“",
-              "„Kannst du kurz helfen? Ich bin lost.“",
-              "„Ich versuche so zu tun, als wär ich produktiv.“",
-              "„Heute ist mein Gehirn im Wartungsmodus.“",
-              "„Ich hab grad Flashbacks an Hausaufgaben.“",
-              "„Ok, aber warum fühlt sich das wie ein Escape‑Room an?“",
-              "„Wenn das wieder glitcht, ich geh direkt Mensa.“",
-              "„Ich hab ‘ne Theorie, aber sie klingt dumm.“",
-              "„Sag nix, aber ich hab’s grad aus Versehen richtig gemacht.“",
-              "„Ich hab 1% Akku und 100% Mut.“",
-              "„Lass uns das wie ein Quest lösen: Schritt für Schritt.“",
-              "„Wenn du’s rausfindest, bist du Legende.“",
-              "„Ich brauch kurz einen Hint…“",
-              "„Ich hab die Lösung… irgendwo. Bestimmt.“",
-              "„Brain.exe reagiert nicht.“"
+            const hooks = [
+              "Ich versuch grad, nicht komplett im Chaos zu versinken.",
+              "Heute ist irgendwie alles bisschen wild, aber machbar.",
+              "Ich hab Bock auf Fortschritt, nur mein Kopf ist noch im Ladebildschirm.",
+              "Wenn wir das zusammen aufdröseln, klappt's safe."
             ];
-            out += lines[Math.floor(Math.random()*lines.length)];
+            const hook = hooks[Math.floor(Math.random()*hooks.length)];
+            state.npcDialog = { active:true, npcId:id, step:"start", isTeacher:false, hook };
+            out += `„${hook}"
+
+Deine Antwort:
+  (1) „Was genau ist gerade dein Problem?“
+  (2) „Komm, wir machen einen kleinen Plan.“
+  (3) „Ich hör kurz zu, vielleicht hilft das schon.“
+  (0) Gespräch beenden
+
+Eingabe: choose <nummer>`;
           }
         }
 
@@ -2993,9 +2971,75 @@ case "reset":{
 
       
       case "choose":{
-        if(!state.sidequest || !state.sidequest.unlocked) return { ok:false, out:"choose: erst Winkelmann finden." };
         const pick = (args[0]||"").trim();
         if(!pick) return { ok:false, out:"Usage: choose <number> (z.B. choose 3)" };
+
+        // Allgemeine NPC-Dialoge (mehrstufig)
+        if(state.npcDialog && state.npcDialog.active){
+          const d = state.npcDialog;
+          const npc = NPCS[d.npcId];
+          const npcName = npc ? npc.name : "NPC";
+          const hook = d.hook || "Hier ist heute viel los.";
+
+          const closeDialog = (text)=>{
+            state.npcDialog = null;
+            saveState();
+            return { ok:true, out:text };
+          };
+
+          if(pick === "0") return closeDialog(`🗨️ ${npcName}
+„Alles gut. Wir reden später weiter.“`);
+
+          if(d.step === "start"){
+            const startReplies = {
+              "1": d.isTeacher
+                ? `„Gute Frage. ${hook} Wenn du’s strukturiert angehst, kommst du schnell voran.“`
+                : `„Haha, ja. ${hook} Ich hab da schon ein paar wilde Momente gesehen.“`,
+              "2": d.isTeacher
+                ? `„Wenn du willst, machen wir’s pragmatisch: kleiner Plan, dann Schritt für Schritt.“`
+                : `„Safe. Lass uns kurz nen Plan machen, sonst verzetteln wir uns wieder komplett.“`,
+              "3": d.isTeacher
+                ? `„Fair. Dann nur die Kurzfassung: ruhig bleiben, lesen, dann handeln.“`
+                : `„Fühl ich. Dann nur Mini-Tipp: nicht stressen, einfach den nächsten kleinen Schritt nehmen.“`
+            };
+            if(!startReplies[pick]) return { ok:false, out:"choose: bitte 1, 2, 3 oder 0 wählen." };
+
+            d.step = "followup";
+            d.path = pick;
+            state.npcDialog = d;
+            saveState();
+
+            return { ok:true, out:
+`🗨️ ${npcName}
+${startReplies[pick]}
+
+Wie willst du weiterreden?
+  (1) Nach einem konkreten Tipp fragen
+  (2) Kurz Smalltalk / Motivation
+  (0) Gespräch beenden` };
+          }
+
+          if(d.step === "followup"){
+            if(pick !== "1" && pick !== "2") return { ok:false, out:"choose: bitte 1, 2 oder 0 wählen." };
+            const finalLine = (pick === "1")
+              ? (d.isTeacher
+                ? "„Konkreter Tipp: erst Überblick (ls/cat), dann gezielt handeln. Kein Blindflug, kein Panik-Spam.“"
+                : "„Konkreter Tipp: einmal kurz sortieren, dann nur ein Problem nach dem anderen lösen. Das klappt echt.“")
+              : (d.isTeacher
+                ? "„Du machst das schon. Konstanz schlägt Chaos - immer.“"
+                : "„Wird schon. Du bist nicht allein im Quest-Modus. 😄“");
+            return closeDialog(`🗨️ ${npcName}
+${finalLine}
+
+(Gespräch beendet.)`);
+          }
+
+          state.npcDialog = null;
+          saveState();
+          return { ok:false, out:"choose: Dialogstatus war ungültig. Starte ein neues Gespräch mit talk <name>." };
+        }
+
+        if(!state.sidequest || !state.sidequest.unlocked) return { ok:false, out:"choose: erst Winkelmann finden." };
         if(state.sidequest.dialog !== "winkelmann") return { ok:false, out:"choose: Keine Auswahl aktiv. Tipp: talk winkelmann" };
         // Winkelmann: Kontext-Menüs (Netzwerk -> Befehle erklärt)
         const menu = state.sidequest.winkMenu || "main";
