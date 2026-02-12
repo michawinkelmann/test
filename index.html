@@ -33,6 +33,11 @@
   <p id="tutorialText">—</p>
   <button class="btn" id="tutorialBtn">Weiter</button>
 </div>
+<div class="clippyTooltip" id="clippyTooltip" hidden>
+  <div class="clippyTooltipTitle">📎 Clippy Helfer</div>
+  <div class="clippyTooltipText" id="clippyTooltipText">—</div>
+  <button class="btn" id="clippyTooltipOk">Okay</button>
+</div>
 
 <header>
   <div class="brand">
@@ -71,7 +76,7 @@
   </section>
 
   <section class="card terminalCard" id="terminalPanel">
-    <h2>Terminal</h2>
+    <h2 class="terminalTitleRow">Terminal <button class="btn clippyBtn" id="clippyBtn" type="button" aria-label="Clippy Helfer öffnen">📎 Clippy Helfer</button></h2>
     <div class="content terminalWrap">
       <div class="terminal" id="term" aria-live="polite"></div>
       <div class="inputBar">

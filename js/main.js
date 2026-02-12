@@ -33,7 +33,7 @@ const TUTORIAL_TASKS = [
   { id:"ls_backpack", kind:"input", text:'Super. Schau dich auch hier mit "ls" um.' },
   { id:"cat_snack", kind:"output", text:'Mit "cat" kannst du Dateien lesen bzw. mit Gegenständen interagieren. Probier das mit der Datei hier im Ordner aus. Geben dazu "cat snack.txt" ein.' },
   { id:"cd_up", kind:"input", text:'Du kannst mit "cd .." eine Ebene nach oben gehen. Probier das jetzt aus.' },
-  { id:"final", kind:"input", text:'Sehr gut! Viel Erfolg im Spiel 🎉 Lies jetzt mit "cat readme.txt" weiter und leg los.' }
+  { id:"final", kind:"input", text:'Sehr gut! Viel Erfolg im Spiel 🎉 Lies jetzt mit "cat readme.txt" weiter und leg los. Und falls du später festhängst: Oben rechts im Terminal findest du den 📎 Clippy Helfer mit einer Schritt-für-Schritt-Hilfe zur nächsten Hauptquest.' }
 ];
 
 let gameStarted = false;
@@ -43,6 +43,114 @@ let guidedTutorial = {
   taskStep:0
 };
 let bootLoadSource = "Autosave";
+let clippyHelper = {
+  active:false,
+  objectiveKey:""
+};
+
+function objectiveUniqueKey(obj){
+  if(!obj) return "";
+  return `${state.phase}:${obj.key || obj.title || "quest"}`;
+}
+
+function getCurrentMainObjective(){
+  const all = ((window.SCHWARM_DATA && window.SCHWARM_DATA.OBJECTIVES) || []);
+  const list = all.filter((o)=>o.phase===state.phase);
+  for(const o of list){
+    if(!o.done(state)) return o;
+  }
+  return null;
+}
+
+function getClippyQuestSteps(obj){
+  if(!obj){
+    return "Du hast in dieser Phase aktuell keine offene Mainquest mehr. Nice!\n\nWenn eine neue Phase startet, kann ich dir wieder die nächsten Schritte erklären.";
+  }
+
+  const key = String(obj.key || "").toLowerCase();
+  const title = String(obj.title || "Mainquest");
+  const hint = String(obj.hint || "");
+
+  const keySteps = {
+    arbeitsamt:[
+      '1) Prüfe zuerst deinen Standort mit "pwd".',
+      '2) Wechsel dann in den neuen Bereich: "cd /arbeitsamt".',
+      '3) Kontrolliere mit "ls", ob der Ortswechsel geklappt hat und welche Dateien/NPCs dort sind.',
+      '4) Nutze danach "quests", um den Fortschritt direkt gegenzuprüfen.'
+    ],
+    beamter:[
+      '1) Stelle sicher, dass du in /arbeitsamt bist (ggf. "cd /arbeitsamt").',
+      '2) Starte das Gespräch exakt mit: "talk beamter".',
+      '3) Lies die Ausgabe vollständig, weil dort oft der nächste Zielort/Hint genannt wird.',
+      '4) Nutze anschließend "quests", damit du direkt siehst, ob die Mainquest als erledigt markiert wurde.'
+    ],
+    snackmaster:[
+      '1) Wechsle in den Job-Ordner (z.B. über "cd /real_life/snackmaster").',
+      '2) Öffne die relevanten Dateien mit "cat" und suche im Audit-Log gezielt nach der Allergen-Marker-Zeile.',
+      '3) Notiere dir den entscheidenden Inhalt oder Marker sauber.',
+      '4) Sprich danach die genannte NPC-Person an (laut Hint: Jansen).',
+      '5) Prüfe den Fortschritt mit "quests".'
+    ]
+  };
+
+  const generic = [
+    `1) Lies dein aktuelles Ziel genau: "${title}".`,
+    hint ? `2) Nutze den Hint als Leitplanke: ${hint}` : '2) Nutze den Quest-Hint aus dem Zielpanel als Leitplanke.',
+    '3) Prüfe deinen Standort mit "pwd" und den Inhalt mit "ls", bevor du den nächsten Befehl eingibst.',
+    '4) Führe die Aufgabe Schritt für Schritt aus (z.B. wechseln mit "cd", lesen mit "cat", suchen mit "grep").',
+    '5) Kontrolliere nach jedem Teilschritt mit "quests", ob der Fortschritt übernommen wurde.',
+    '6) Wenn etwas fehlschlägt, lies die Terminal-Ausgabe komplett und korrigiere den letzten Schritt statt random neue Befehle zu probieren.'
+  ];
+
+  const steps = keySteps[key] || generic;
+  return [
+    `Aktuelle Mainquest (Phase ${state.phase}): ${title}`,
+    '',
+    ...steps,
+    '',
+    'Pro-Tipp: Arbeite exakt in dieser Reihenfolge. So vermeidest du 90% aller Sackgassen.'
+  ].join('\n');
+}
+
+function hideClippyHelper(){
+  clippyHelper.active = false;
+  const tip = el("clippyTooltip");
+  if(tip) tip.hidden = true;
+}
+
+function placeClippyTooltip(){
+  const btn = el("clippyBtn");
+  const tip = el("clippyTooltip");
+  if(!btn || !tip || tip.hidden) return;
+  const rect = btn.getBoundingClientRect();
+  const top = Math.max(12, rect.bottom + 10);
+  const left = Math.min(window.innerWidth - tip.offsetWidth - 12, Math.max(12, rect.right - tip.offsetWidth));
+  tip.style.top = `${top}px`;
+  tip.style.left = `${left}px`;
+}
+
+function syncClippyHelperVisibility(){
+  if(!clippyHelper.active) return;
+  const cur = getCurrentMainObjective();
+  const curKey = objectiveUniqueKey(cur);
+  if(!cur || curKey !== clippyHelper.objectiveKey){
+    hideClippyHelper();
+  }
+}
+
+function showClippyHelper(){
+  const tip = el("clippyTooltip");
+  const text = el("clippyTooltipText");
+  if(!tip || !text) return;
+
+  const cur = getCurrentMainObjective();
+  clippyHelper.objectiveKey = objectiveUniqueKey(cur);
+  text.textContent = getClippyQuestSteps(cur);
+  tip.hidden = false;
+  clippyHelper.active = true;
+  requestAnimationFrame(placeClippyTooltip);
+}
+
 
 function startNewGuidedGame(){
   doReset(false);
@@ -325,6 +433,19 @@ el("savegame").addEventListener("click", ()=>{
   row(phrase, "p");
 });
 
+el("clippyBtn").addEventListener("click", ()=>{
+  showClippyHelper();
+});
+
+el("clippyTooltipOk").addEventListener("click", ()=>{
+  hideClippyHelper();
+});
+
+window.addEventListener("resize", ()=>{
+  placeClippyTooltip();
+});
+
+
 cmdInput.addEventListener("keydown", (e)=>{
   if(e.key === "Enter"){
     const v = cmdInput.value;
@@ -369,6 +490,7 @@ function commitUI(opts={}){
   try{ if(o.obj) renderObjectives(); }catch(e){}
   try{ if(o.rewards) renderRewards(); }catch(e){}
   try{ if(o.rewards) renderSidequestPanel(); }catch(e){}
+  try{ syncClippyHelperVisibility(); }catch(e){}
 
   try{
     const base = allowedCommands();

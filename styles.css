@@ -429,5 +429,59 @@ body{
       box-shadow:0 12px 26px rgba(0,0,0,.4);
     }
     .tutorialBubble p{ margin:0 0 10px 0; font-size:13px; line-height:1.45; }
+
+    .terminalTitleRow{
+      display:flex !important;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .clippyBtn{
+      border-color: rgba(124,244,176,.45);
+      color: rgba(124,244,176,.95);
+      background: rgba(124,244,176,.08);
+      font-size:11px;
+      padding:6px 10px;
+      line-height:1.2;
+      white-space:nowrap;
+    }
+    .clippyBtn:hover{ border-color: rgba(124,244,176,.72); }
+    .clippyTooltip{
+      position:fixed;
+      z-index:1700;
+      max-width:520px;
+      width:min(520px, calc(100vw - 24px));
+      border:1px solid rgba(124,244,176,.45);
+      border-radius:14px;
+      padding:12px;
+      background:rgba(10,16,24,.98);
+      box-shadow:0 14px 28px rgba(0,0,0,.45);
+    }
+    .clippyTooltip::before{
+      content:"";
+      position:absolute;
+      top:-8px;
+      right:42px;
+      width:14px;
+      height:14px;
+      transform:rotate(45deg);
+      border-left:1px solid rgba(124,244,176,.45);
+      border-top:1px solid rgba(124,244,176,.45);
+      background:rgba(10,16,24,.98);
+    }
+    .clippyTooltipTitle{
+      font-size:13px;
+      color:rgba(124,244,176,.95);
+      margin-bottom:8px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .clippyTooltipText{
+      font-size:13px;
+      line-height:1.5;
+      color:var(--text);
+      margin-bottom:10px;
+      white-space:pre-wrap;
+    }
     .tutorialFocus{ position:relative; z-index:1550; box-shadow:0 0 0 2px rgba(124,244,176,.6), 0 0 0 9999px rgba(5,8,14,.58); }
     .tutorialInputFocus{ box-shadow:0 0 0 2px rgba(124,244,176,.75); border-radius:12px; }
