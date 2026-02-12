@@ -36,7 +36,7 @@ const TUTORIAL_TASKS = [
   { id:"final", kind:"input", text:'Sehr gut! Viel Erfolg im Spiel 🎉 Lies jetzt mit "cat readme.txt" weiter und leg los. Falls du später festhängst: Oben rechts im Terminal hilft dir der 📎 Clippy Helfer mit einer Schritt-für-Schritt-Lösung zur nächsten Mainquest.' }
 ];
 
-
+const CLIPPY_COOLDOWN_MS = 5 * 60 * 1000;
 
 let clippyHelper = {
   open:false,
@@ -222,6 +222,37 @@ function buildClippyText(objective){
     "",
     "Warum diese Reihenfolge? So minimierst du Fehlversuche: erst Orientierung (Ort/Datei), dann exakte Aktion, dann Verifikation (quests)."
   ].join("\n");
+}
+
+function isClippyOnCooldown(){
+  const last = Number(state?.clippy?.lastUsedAt || 0);
+  return last > 0 && (Date.now() - last) < CLIPPY_COOLDOWN_MS;
+}
+
+function updateClippyAvailabilityUI(){
+  const btn = el("clippyBtn");
+  const status = el("clippyStatus");
+  if(!btn || !status) return;
+
+  const cooldownActive = isClippyOnCooldown();
+  btn.classList.toggle("cooldownActive", cooldownActive);
+  btn.setAttribute("aria-disabled", cooldownActive ? "true" : "false");
+
+  status.classList.remove("ready", "cooldown");
+  if(cooldownActive){
+    status.textContent = "Clippy ist auf Cooldown (5 Minuten).";
+    status.classList.add("cooldown");
+  }else{
+    status.textContent = "Clippy bereit zum Helfen.";
+    status.classList.add("ready");
+  }
+}
+
+function startClippyCooldown(){
+  if(!state.clippy) state.clippy = { lastUsedAt:0 };
+  state.clippy.lastUsedAt = Date.now();
+  saveState();
+  updateClippyAvailabilityUI();
 }
 
 function placeClippyTooltip(){
@@ -456,6 +487,7 @@ function boot(){
   renderSidequestPanel();
   renderPhasePill();
   maybeCloseClippyOnQuestProgress();
+  updateClippyAvailabilityUI();
 
   try{ renderHeaderSub(); }catch(e){}
 
@@ -560,7 +592,12 @@ el("clippyBtn").addEventListener("click", ()=>{
     closeClippyTooltip();
     return;
   }
+  if(isClippyOnCooldown()){
+    updateClippyAvailabilityUI();
+    return;
+  }
   openClippyTooltip();
+  startClippyCooldown();
 });
 
 el("clippyOk").addEventListener("click", ()=>{
@@ -631,6 +668,7 @@ function commitUI(opts={}){
   try{ if(o.obj) renderObjectives(); }catch(e){}
   try{ if(o.rewards) renderRewards(); }catch(e){}
   try{ if(o.rewards) renderSidequestPanel(); }catch(e){}
+  try{ updateClippyAvailabilityUI(); }catch(e){}
 
   try{
     const base = allowedCommands();

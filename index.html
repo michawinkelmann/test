@@ -78,7 +78,10 @@
   <section class="card terminalCard" id="terminalPanel">
     <div class="cardHeader">
       <h2>Terminal</h2>
-      <button class="btn clippyBtn" id="clippyBtn" type="button" aria-label="Clippy Helfer öffnen">📎 Clippy Helfer</button>
+      <div class="clippyControls">
+        <button class="btn clippyBtn" id="clippyBtn" type="button" aria-label="Clippy Helfer öffnen">📎 Clippy Helfer</button>
+        <span class="clippyStatus" id="clippyStatus" aria-live="polite">Clippy bereit zum Helfen.</span>
+      </div>
     </div>
     <div class="content terminalWrap">
       <div class="terminal" id="term" aria-live="polite"></div>
