@@ -395,14 +395,21 @@
       });
       const hasHidden = allKids.length > visibleKids.length;
 
-      return `${marker} ${name}${hasHidden ? " …" : ""}`;
+      return {
+        text: `${marker} ${name}${hasHidden ? " …" : ""}`,
+        isCurrent
+      };
     };
 
     function walk(path, prefix, isLast){
+      const label = labelFor(path);
       if(path !== "/"){
-        lines.push(prefix + (isLast ? "└─ " : "├─ ") + labelFor(path));
+        lines.push({
+          prefix: prefix + (isLast ? "└─ " : "├─ "),
+          label
+        });
       }else{
-        lines.push(labelFor(path));
+        lines.push({ prefix: "", label });
       }
 
       const kids = (listDir(path) || []).map((name)=>{
@@ -417,7 +424,14 @@
     }
 
     walk("/", "", true);
-    mapEl.textContent = lines.join("\n");
+    mapEl.innerHTML = lines.map(({ prefix, label })=>{
+      const safePrefix = escapeHtml(prefix);
+      const safeLabel = escapeHtml(label.text);
+      if(label.isCurrent){
+        return `${safePrefix}<span class="mapCurrentEntry">${safeLabel}</span>`;
+      }
+      return `${safePrefix}${safeLabel}`;
+    }).join("\n");
   }
   function locationPath(){
     let p = state.cwd;

@@ -314,6 +314,14 @@ body{
       border-radius:12px;
       background: rgba(0,0,0,.26);
     }
+    .mapCurrentEntry{
+      color:#b8ffd6;
+      text-shadow:
+        0 0 4px rgba(124,244,176,.85),
+        0 0 10px rgba(124,244,176,.6),
+        0 0 18px rgba(124,244,176,.35);
+      font-weight:700;
+    }
     @media (max-width: 1020px){
       .terminalWrap{height:auto;}
       .mapCard .content{height:auto;}
