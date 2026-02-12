@@ -546,6 +546,11 @@
         </div>`;
       wrap.appendChild(d);
     }
+
+    // Clippy-Tooltip direkt schließen, wenn sich der aktive Quest-Status ändert.
+    try{
+      if(window.syncClippyTooltip) window.syncClippyTooltip();
+    }catch(e){}
   }
 
   function renderRewards(){
