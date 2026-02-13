@@ -25,7 +25,9 @@
   function markLatestRow(rowEl, kind){
     if(kind === "input"){
       if(lastInputRow) lastInputRow.classList.remove("rowLatestInput");
+      if(lastOutputRow) lastOutputRow.classList.remove("rowLatestOutput");
       lastInputRow = rowEl;
+      lastOutputRow = null;
       rowEl.classList.add("rowLatestInput");
       return;
     }
