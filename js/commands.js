@@ -516,15 +516,91 @@ function allowedCommands(){
     return String((npc && npc.name) || npcId || "NPC");
   }
 
-  function buildNpcDialogTree(npcId, npc){
-    const shortName = String((npc && npc.name) || npcId || "NPC").split(" ")[0];
-    const teacherName = getTeacherDialogName(npc);
-    let hash = 0;
-    for(const ch of String(npcId||"")) hash = (hash * 33 + ch.charCodeAt(0)) >>> 0;
+  function normalizeTeacherRoleKey(roleText){
+    const normalized = String(roleText || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+    if(!normalized) return "general";
+    if(/\b(mathe|mathematik)\b/.test(normalized)) return "math";
+    if(/\b(englisch|english)\b/.test(normalized)) return "english";
+    if(/\b(deutsch|german)\b/.test(normalized)) return "german";
+    if(/\b(geschichte|history)\b/.test(normalized)) return "history";
+    if(/\b(sport)\b/.test(normalized)) return "sport";
+    if(/\b(kunst|art)\b/.test(normalized)) return "art";
+    if(/\b(chemie|chemistry)\b/.test(normalized)) return "chemistry";
+    if(/\b(bio|biologie|biology)\b/.test(normalized)) return "biology";
+    if(/\b(erdkunde|geografie|geographie|geography)\b/.test(normalized)) return "geography";
+    if(/\b(werte und normen|ethik|philosophie)\b/.test(normalized)) return "ethics";
+    return "general";
+  }
 
-    if(getNpcDialogType(npcId, npc) === "teacher"){
-      const roleText = String((npc && npc.role) || "Unterricht");
-      const teacherOpeners = [
+  function getTeacherOpenerPool(roleText){
+    const key = normalizeTeacherRoleKey(roleText);
+    const pools = {
+      math: [
+        "„Taschenrechner bleibt erstmal zu — erst Denkweg, dann Ergebnis.“",
+        "„Zeig mir den Rechenweg. Das Ergebnis allein rettet dir heute nichts.“",
+        "„Nicht raten, begründen: Welche Regel nutzt du an dieser Stelle?“",
+        "„Wir rechnen strukturiert: Gegeben, gesucht, Ansatz, Kontrolle.“"
+      ],
+      english: [
+        "„Short answers, clear grammar — start simple and precise.“",
+        "„Bitte in ganzen Sätzen antworten, nicht im Telegrammstil.“",
+        "„Vocabulary first, then style. Sag es klar, dann schön.“",
+        "„Read the task carefully — key words entscheiden die Punktzahl.“"
+      ],
+      german: [
+        "„Erst den Text erfassen, dann interpretieren — nicht andersrum.“",
+        "„Achte auf Signalwörter. Die tragen oft das ganze Argument.“",
+        "„Eine starke These braucht immer ein passendes Textbeispiel.“",
+        "„Schreib klar, knapp und begründet — das überzeugt am meisten.“"
+      ],
+      history: [
+        "„Ordne das erst zeitlich ein — ohne Kontext bleibt es nur eine Anekdote.“",
+        "„Quelle ist nicht gleich Wahrheit: Wer spricht, wann und warum?“",
+        "„Geschichte lernt man über Zusammenhänge, nicht über Jahreszahlen allein.“",
+        "„Vergleichen statt aufzählen: Was hat sich verändert, was blieb?“"
+      ],
+      sport: [
+        "„Tempo ist gut, Technik ist besser — wir machen's sauber.“",
+        "„Warm-up ernst nehmen, dann laufen die Übungen von allein besser.“",
+        "„Teamplay heißt: reden, schauen, mitdenken — nicht nur rennen.“",
+        "„Saubere Wiederholung schlägt hektische zehn Extra-Runden.“"
+      ],
+      art: [
+        "„Mut zur Fläche — der erste Strich darf ruhig sichtbar sein.“",
+        "„Beobachten vor Bewerten. Schau erst, dann entscheide.“",
+        "„Komposition schlägt Perfektion: Ordnung im Bild führt den Blick.“",
+        "„Material spricht mit — nutz die Struktur, statt gegen sie zu arbeiten.“"
+      ],
+      chemistry: [
+        "„Im Labor gilt: erst Sicherheit, dann Reaktion.“",
+        "„Beobachtung vor Deutung — was siehst du wirklich?“",
+        "„Formel ist Sprache. Lies sie, bevor du rechnest.“",
+        "„Wir arbeiten sauber: Hypothese, Versuch, Auswertung.“"
+      ],
+      biology: [
+        "„In der Biologie zählt Struktur: Ebene für Ebene verstehen.“",
+        "„Beschreiben, vergleichen, erklären — so wird aus Wissen Verständnis.“",
+        "„Funktion folgt Aufbau. Frag immer: Wozu dient das?“",
+        "„Nicht auswendig runterrattern — Zusammenhänge zeigen!“"
+      ],
+      geography: [
+        "„Karte lesen heißt Muster erkennen, nicht nur Orte finden.“",
+        "„Denk in Räumen: Lage, Nutzung, Wirkung.“",
+        "„Mensch und Umwelt immer zusammen betrachten — das ist der Kern.“",
+        "„Beschreibe erst den Raum, erkläre dann die Prozesse.“"
+      ],
+      ethics: [
+        "„Gute Diskussion heißt: Position begründen, nicht Lautstärke erhöhen.“",
+        "„Wir trennen Meinung und Argument — beides darf da sein, aber sauber.“",
+        "„Erst Perspektiven sammeln, dann bewerten.“",
+        "„Fairness beginnt beim Zuhören, nicht beim Gewinnen.“"
+      ],
+      general: [
         "„So, alle einmal mitschreiben — und du kommst bitte kurz zu mir.“",
         "„Erst lesen, dann reden. Und jetzt: Was brauchst du?“",
         "„Handys weg, Köpfe an. Wir klären das jetzt sauber.“",
@@ -533,7 +609,20 @@ function allowedCommands(){
         "„Wer eine Fehlermeldung hat, liest sie. Wer keine hat, denkt mit.“",
         "„Wir machen das ordentlich: Ziel, Schritt, Kontrolle.“",
         "„Stopp, einmal sortieren. Dann lösen wir's ohne Chaos.“"
-      ];
+      ]
+    };
+    return pools[key] || pools.general;
+  }
+
+  function buildNpcDialogTree(npcId, npc){
+    const shortName = String((npc && npc.name) || npcId || "NPC").split(" ")[0];
+    const teacherName = getTeacherDialogName(npc);
+    let hash = 0;
+    for(const ch of String(npcId||"")) hash = (hash * 33 + ch.charCodeAt(0)) >>> 0;
+
+    if(getNpcDialogType(npcId, npc) === "teacher"){
+      const roleText = String((npc && npc.role) || "Unterricht");
+      const teacherOpeners = getTeacherOpenerPool(roleText);
       const planOptions = [
         { label:`Wie priorisiere ich Aufgaben in ${roleText}?`, response:"„Sortiere nach Wirkung: erst das, was den nächsten Fortschritt freischaltet.“" },
         { label:"Ich brauche eine Reihenfolge statt Trial-and-Error.", response:"„Dann gehst du so: Ziel lesen, Fundort prüfen, erst dann handeln.“" },
