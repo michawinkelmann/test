@@ -3,6 +3,8 @@
   const term = el("term");
   const cmdInput = el("cmd");
   const promptEl = el("prompt");
+  let lastInputRow = null;
+  let lastOutputRow = null;
   const now = ()=>new Date().toLocaleString("de-DE");
   const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
 
@@ -14,19 +16,39 @@
       .replaceAll('"',"&quot;")
       .replaceAll("'","&#039;");
   }
-  function row(text, cls=""){
+  function clearRowTracking(){
+    lastInputRow = null;
+    lastOutputRow = null;
+  }
+  window.clearRowTracking = clearRowTracking;
+
+  function markLatestRow(rowEl, kind){
+    if(kind === "input"){
+      if(lastInputRow) lastInputRow.classList.remove("rowLatestInput");
+      lastInputRow = rowEl;
+      rowEl.classList.add("rowLatestInput");
+      return;
+    }
+    if(lastOutputRow) lastOutputRow.classList.remove("rowLatestOutput");
+    lastOutputRow = rowEl;
+    rowEl.classList.add("rowLatestOutput");
+  }
+
+  function row(text, cls="", kind="output"){
     const d = document.createElement("div");
     d.className="row";
     if(cls) d.innerHTML = `<span class="${cls}">${escapeHtml(text)}</span>`;
     else d.textContent = text;
     term.appendChild(d);
+    markLatestRow(d, kind);
     term.scrollTop = term.scrollHeight;
   }
-  function rowHtml(html){
+  function rowHtml(html, kind="output"){
     const d = document.createElement("div");
     d.className="row";
     d.innerHTML = html;
     term.appendChild(d);
+    markLatestRow(d, kind);
     term.scrollTop = term.scrollHeight;
   }
 
@@ -76,4 +98,3 @@
 </svg>`;
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
   }
-

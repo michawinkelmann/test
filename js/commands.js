@@ -922,7 +922,7 @@ QUEST UPDATE:
   }
 
   function applyCheat1337(){
-    row(`${promptText()} 1337`, "p");
+    row(`${promptText()} 1337`, "p", "input");
     row("🎮 Cheatcode 1337 aktiviert: Teleport ans Ende von Phase 4.", "ok");
 
     state.phase = 4;
@@ -1670,6 +1670,7 @@ case "man":{
 
       case "clear":{
         term.innerHTML="";
+        try{ if(window.clearRowTracking) window.clearRowTracking(); }catch(e){}
         return { ok:true, out:"" };
       }
 
@@ -3757,7 +3758,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
       state.lastCmds = state.lastCmds.slice(0, 120);
       state.historyIndex = 0;
       saveState();
-      row(`${promptText()} ${trimmed}`, "p");
+      row(`${promptText()} ${trimmed}`, "p", "input");
       row(guidedBlockMessage, "warn");
       return;
     }
@@ -3781,7 +3782,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     state.historyIndex = 0;
     saveState();
 
-    row(`${promptText()} ${trimmed}`, "p");
+    row(`${promptText()} ${trimmed}`, "p", "input");
 
     // Support && and || (left-to-right). Each segment may contain pipes.
     const parts = trimmed.split(/(\s&&\s|\s\|\|\s)/);
@@ -3855,6 +3856,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     state.startedAt = now();
     saveState();
     term.innerHTML = "";
+    try{ if(window.clearRowTracking) window.clearRowTracking(); }catch(e){}
     promptEl.textContent = promptText();
     renderPhasePill();
     try{ renderHeaderSub(); }catch(e){}
