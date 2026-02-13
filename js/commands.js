@@ -523,50 +523,63 @@ function allowedCommands(){
     for(const ch of String(npcId||"")) hash = (hash * 33 + ch.charCodeAt(0)) >>> 0;
 
     if(getNpcDialogType(npcId, npc) === "teacher"){
-      const teacherStyles = [
-        {
-          intro:`„${teacherName}: Schön, dass du fragst. Lass uns dein Thema klar sortieren, dann wird es sofort leichter.“`,
-          planPrompt:"Was passt gerade am besten zu deiner Lage?",
-          planA:{ label:"Ich brauche eine klare Reihenfolge statt Trial-and-Error.", response:"„Dann gehst du immer in drei Schritten: Ziel lesen, Fundort prüfen, erst dann handeln.“" },
-          planB:{ label:"Wie verhindere ich, mich in Nebensachen zu verlieren?", response:"„Arbeite mit einem Mini-Fokusfenster: ein Ziel, ein Kommando, ein Check.“" },
-          learnA:{ label:"Ich will Kommandos verstehen, nicht nur reproduzieren.", response:"„Sehr gut. Stell zu jedem Befehl drei Fragen: Was ändert sich, was bleibt, woran sehe ich Erfolg?“" },
-          learnB:{ label:"Wie lerne ich effizient für Abgaben unter Zeitdruck?", response:"„Mit kurzen Intervallen: Orientierung, Umsetzung, Kontrolle. Keine Panik-Sprints.“" },
-          talkA:{ label:"Was ist Ihr persönlicher Anti-Stress-Trick?", response:"„Komplexes in kleine, überprüfbare Schritte zerlegen. Das beruhigt sofort.“" },
-          talkB:{ label:"Was nervt Sie am meisten bei chaotischen Abgaben?", response:"„Unklare Benennung. Gute Struktur spart allen Zeit und Nerven.“" }
-        },
-        {
-          intro:`„${teacherName}: Gute Frage. Wir gehen das Schritt für Schritt an — ruhig, klar und ohne Hektik.“`,
-          planPrompt:"Worauf willst du dich in diesem Gespräch fokussieren?",
-          planA:{ label:"Ich brauche einen schnellen Rettungsplan für festgefahrene Quests.", response:"„Stoppen, Zielsatz formulieren, den kleinsten verifizierbaren Schritt ausführen.“" },
-          planB:{ label:"Wie erkenne ich früh, dass mein Ansatz falsch ist?", response:"„Wenn du viel tippst, aber kein neues Wissen gewinnst, bist du im Tunnel.“" },
-          learnA:{ label:"Ich möchte fachlich tiefer verstehen, statt nur 'durchzukommen'.", response:"„Genau das ist der Unterschied zwischen kurzfristigem Fix und echter Kompetenz.“" },
-          learnB:{ label:"Wie trainiere ich Ruhe in Prüfungsphasen?", response:"„Vorbereitung als Routine, nicht als Ausnahme. Rituale schlagen Hektik.“" },
-          talkA:{ label:"Wie bleiben Sie in stressigen Wochen gelassen?", response:"„Ich priorisiere nach Wirkung, nicht nach Lautstärke.“" },
-          talkB:{ label:"Was schätzen Sie bei Schüler*innen am meisten?", response:"„Saubere Fragen. Gute Fragen zeigen bereits gutes Denken.“" }
-        },
-        {
-          intro:`„${teacherName}: Erzähl kurz, wo du hängst. Dann finden wir direkt einen sinnvollen nächsten Schritt.“`,
-          planPrompt:"Welchen Modus brauchst du jetzt?",
-          planA:{ label:"Pragmatisch: Was ist mein nächster sicherer Schritt?", response:"„Ort bestimmen, relevante Datei lesen, Ergebnis gegen Questziel prüfen.“" },
-          planB:{ label:"Strategisch: Wie baue ich mir eine stabile Arbeitsroutine?", response:"„Arbeite in Mikrozyklen mit kurzem Review nach jedem Abschnitt.“" },
-          learnA:{ label:"Wie verbessere ich mein technisches Denken langfristig?", response:"„Nicht nur Antworten sammeln, sondern Muster erkennen und notieren.“" },
-          learnB:{ label:"Wie werde ich sicherer beim Erklären von Lösungen?", response:"„Erkläre deinen Weg laut in drei Sätzen: Ausgangslage, Aktion, Ergebnis.“" },
-          talkA:{ label:"Welche Gewohnheit macht im Alltag den größten Unterschied?", response:"„Vor jedem Schritt kurz prüfen: Dient das meinem Ziel oder nur meinem Aktionismus?“" },
-          talkB:{ label:"Was würden Sie mir als Standardregel mitgeben?", response:"„Präzision vor Tempo. Tempo kommt mit Routine von allein.“" }
-        }
+      const roleText = String((npc && npc.role) || "Unterricht");
+      const teacherOpeners = [
+        "„So, alle einmal mitschreiben — und du kommst bitte kurz zu mir.“",
+        "„Erst lesen, dann reden. Und jetzt: Was brauchst du?“",
+        "„Handys weg, Köpfe an. Wir klären das jetzt sauber.“",
+        "„Ruhe bitte. Wir gehen das in sinnvollen Schritten durch.“",
+        "„Nicht raten — begründen. Also: Wo hängst du?“",
+        "„Wer eine Fehlermeldung hat, liest sie. Wer keine hat, denkt mit.“",
+        "„Wir machen das ordentlich: Ziel, Schritt, Kontrolle.“",
+        "„Stopp, einmal sortieren. Dann lösen wir's ohne Chaos.“"
       ];
+      const planOptions = [
+        { label:`Wie priorisiere ich Aufgaben in ${roleText}?`, response:"„Sortiere nach Wirkung: erst das, was den nächsten Fortschritt freischaltet.“" },
+        { label:"Ich brauche eine Reihenfolge statt Trial-and-Error.", response:"„Dann gehst du so: Ziel lesen, Fundort prüfen, erst dann handeln.“" },
+        { label:"Wie erkenne ich früh, dass mein Ansatz nicht trägt?", response:"„Wenn du viel tippst, aber nichts Neues lernst, brauchst du einen Kurswechsel.“" },
+        { label:"Wie halte ich den Überblick bei mehreren To-dos?", response:"„Maximal drei aktive Schritte. Alles andere kommt auf die Parkliste.“" },
+        { label:"Wie plane ich kurze, aber effektive Lernblöcke?", response:"„25 Minuten Fokus, 5 Minuten Check — dann bewusst neu priorisieren.“" },
+        { label:`Was wäre ein guter Arbeitsmodus für ${teacherName}?`, response:"„Ruhig, präzise, überprüfbar. Kein Aktionismus ohne Kontrollpunkt.“" }
+      ];
+      const learnOptions = [
+        { label:`Wie lerne ich ${roleText} nachhaltiger?`, response:"„Nicht nur Lösungen sammeln — Muster notieren und aktiv wiederholen.“" },
+        { label:"Ich will Kommandos verstehen, nicht nur kopieren.", response:"„Frag immer: Was ändert sich, was bleibt, woran erkenne ich Erfolg?“" },
+        { label:"Wie trainiere ich Ruhe in Prüfungsphasen?", response:"„Routinen schlagen Panik. Kleine, feste Abläufe geben Sicherheit.“" },
+        { label:"Wie werde ich sicherer beim Erklären meiner Lösung?", response:"„Erkläre in drei Sätzen: Ausgangslage, Aktion, Ergebnis.“" },
+        { label:"Wie baue ich ein gutes persönliches Nachschlage-System?", response:"„Dokumentiere kurz: Ursache, Kommando, Wirkung, nächster Check.“" },
+        { label:"Wie steigere ich Qualität, ohne zu langsam zu werden?", response:"„Präzision zuerst. Tempo kommt als Nebenprodukt von Klarheit.“" }
+      ];
+      const talkOptions = [
+        { label:"Was ist Ihr Anti-Stress-Trick im Unterricht?", response:"„Komplexes in kleine, überprüfbare Schritte zerlegen.“" },
+        { label:"Was nervt Lehrkräfte bei chaotischen Abgaben am meisten?", response:"„Unklare Benennung. Gute Struktur spart allen Zeit.“" },
+        { label:"Welche Gewohnheit bringt im Schulalltag den größten Effekt?", response:"„Vor jedem Schritt kurz prüfen: Hilft das wirklich dem Ziel?“" },
+        { label:"Was schätzen Sie bei Schüler*innen am meisten?", response:"„Saubere Fragen. Die zeigen bereits gutes Denken.“" },
+        { label:`Was ist Ihr Standardsatz für ${roleText}?`, response:"„Erst verstehen, dann ausführen, dann kontrollieren.“" },
+        { label:"Wie bleiben Sie in stressigen Wochen gelassen?", response:"„Ich priorisiere nach Wirkung, nicht nach Lautstärke.“" }
+      ];
+      const pickUnique = (pool, start)=>{
+        const len = pool.length;
+        const first = pool[start % len];
+        const second = pool[(start + 2 + ((hash >>> 3) % (len - 1))) % len];
+        return [first, second];
+      };
 
-      const style = teacherStyles[hash % teacherStyles.length];
+      const opener = teacherOpeners[hash % teacherOpeners.length];
+      const [planA, planB] = pickUnique(planOptions, hash + 1);
+      const [learnA, learnB] = pickUnique(learnOptions, hash + 5);
+      const [talkA, talkB] = pickUnique(talkOptions, hash + 9);
+
       return {
-        intro: style.intro,
+        intro: `${teacherName} schaut dich an: ${opener}\n${teacherName}: „Okay, wir klären dein Thema ohne Umwege.“`,
         nodes: {
           start: { prompt:"Wie antwortest du?", choices:[
-            { label: style.planA.label, response: style.planA.response, next:"plan" },
-            { label: style.learnA.label, response: style.learnA.response, next:"learning" },
-            { label: style.talkA.label, response: style.talkA.response, next:"smalltalk" }
+            { label: planA.label, response: planA.response, next:"plan" },
+            { label: learnA.label, response: learnA.response, next:"learning" },
+            { label: talkA.label, response: talkA.response, next:"smalltalk" }
           ]},
-          plan: { prompt: style.planPrompt, choices:[
-            { label: style.planB.label, response: style.planB.response, next:"plan_deep" },
+          plan: { prompt:"Worauf willst du den Fokus setzen?", choices:[
+            { label: planB.label, response: planB.response, next:"plan_deep" },
             { label:"Gib mir bitte eine 3-Punkte-Checkliste.", response:"„1) Auftrag klären. 2) Konkreten Schritt ausführen. 3) Ergebnis validieren.“", next:"plan_deep" },
             { label:"Reicht mir erstmal, ich setze das direkt um.", response:"„Sehr gut. Sauber anfangen ist die halbe Lösung.“", next:"endnode" }
           ]},
@@ -575,7 +588,7 @@ function allowedCommands(){
             { label:"Nein, ich hab jetzt einen klaren Plan.", response:"„Perfekt. Dann arbeite Schritt für Schritt.“", next:"endnode" }
           ]},
           learning: { prompt:"Welcher Lernaspekt hilft dir jetzt am meisten?", choices:[
-            { label: style.learnB.label, response: style.learnB.response, next:"learning_deep" },
+            { label: learnB.label, response: learnB.response, next:"learning_deep" },
             { label:"Wie baue ich mir ein eigenes Nachschlage-System auf?", response:"„Dokumentiere gelöste Probleme kurz mit Ursache, Aktion, Ergebnis.“", next:"learning_deep" },
             { label:"Danke, das reicht für jetzt.", response:"„Top. Hauptsache, du setzt es direkt in Handlung um.“", next:"endnode" }
           ]},
@@ -584,7 +597,7 @@ function allowedCommands(){
             { label:"Nein, ich starte direkt mit den Tipps.", response:"„Sehr gut. Routine entsteht durchs Tun.“", next:"endnode" }
           ]},
           smalltalk: { prompt:"Noch eine Frage?", choices:[
-            { label: style.talkB.label, response: style.talkB.response, next:"endnode" },
+            { label: talkB.label, response: talkB.response, next:"endnode" },
             { label:"Was wäre ein guter Standardsatz gegen Chaos?", response:"„Erst verstehen, dann ausführen, dann kontrollieren.“", next:"endnode" }
           ]},
           endnode: { prompt:"Zum Abschluss?", choices:[
