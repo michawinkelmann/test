@@ -93,6 +93,13 @@
       <span class="clippyStatus" id="clippyStatus" aria-live="polite">Status: bereit</span>
     </h2>
     <div class="content terminalWrap">
+      <div class="easyModeBar" id="easyModeBar" aria-live="polite">
+        <div class="modeToggle" role="group" aria-label="Modus umschalten">
+          <button class="btn modeBtn isActive" id="terminalModeBtn" type="button" aria-pressed="true">Terminal</button>
+          <button class="btn modeBtn" id="easyModeBtn" type="button" aria-pressed="false">Einfach</button>
+        </div>
+        <div class="easyActions" id="easyActions" hidden></div>
+      </div>
       <div class="terminal" id="term" aria-live="polite"></div>
       <div class="inputBar">
         <div class="prompt" id="prompt">player@SchwarmShell:~$</div>

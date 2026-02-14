@@ -4009,7 +4009,8 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     }
   }
 
-  function runLine(line){
+  function runLineInternal(line, options={}){
+    const opts = Object.assign({ skipHistory:false }, options||{});
     let trimmed = String(line||"").trim();
     if(!trimmed) return;
 
@@ -4020,10 +4021,12 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
       }
     }catch(e){}
     if(guidedBlockMessage){
-      state.lastCmds.unshift(trimmed);
-      state.lastCmds = state.lastCmds.slice(0, 120);
-      state.historyIndex = 0;
-      saveState();
+      if(!opts.skipHistory){
+        state.lastCmds.unshift(trimmed);
+        state.lastCmds = state.lastCmds.slice(0, 120);
+        state.historyIndex = 0;
+        saveState();
+      }
       row(`${promptText()} ${trimmed}`, "p", "input");
       row(guidedBlockMessage, "warn");
       return;
@@ -4041,12 +4044,12 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
       trimmed = (state.aliases[firstTok] + (rest ? " " + rest : "")).trim();
     }
 
-
-
-    state.lastCmds.unshift(trimmed);
-    state.lastCmds = state.lastCmds.slice(0, 120);
-    state.historyIndex = 0;
-    saveState();
+    if(!opts.skipHistory){
+      state.lastCmds.unshift(trimmed);
+      state.lastCmds = state.lastCmds.slice(0, 120);
+      state.historyIndex = 0;
+      saveState();
+    }
 
     row(`${promptText()} ${trimmed}`, "p", "input");
 
@@ -4115,6 +4118,10 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     }
   }
 
+  function runLine(line){
+    runLineInternal(line);
+  }
+
   function doReset(withMessage){
     localStorage.removeItem(STORAGE_KEY);
     state = structuredClone(INITIAL_STATE);
@@ -4173,3 +4180,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
     row("Euer Schulsystem glitched — und die Welt fühlt sich an wie ein Game.");
     row("Dein Job: Bash lernen und raus-escapen. (Main Character Moment.)");
   }
+
+
+  window.runLine = runLine;
+  window.runLineInternal = runLineInternal;

@@ -102,6 +102,121 @@ function getCurrentMainObjective(){
   return list.find((o)=>!o.done(state)) || null;
 }
 
+const EASY_MODE_ACTIONS = {
+  viewLocation: {
+    label: "Ort ansehen",
+    icon: "🗺️",
+    command: ()=>"pwd"
+  },
+  talkNpc: {
+    label: "Mit NPC reden",
+    icon: "💬",
+    command: ()=>{
+      const npc = getCurrentRoomNpc();
+      if(!npc) return "quests";
+      return `talk ${npc}`;
+    }
+  },
+  nextQuest: {
+    label: "Nächster Quest-Schritt",
+    icon: "🧭",
+    command: ()=>"hint"
+  },
+  openFolder: {
+    label: "Ordner öffnen",
+    icon: "📁",
+    command: ()=>{
+      const target = suggestFolderTarget();
+      return `cd ${target}`;
+    }
+  }
+};
+
+function getCurrentRoomNpc(){
+  const currentRoom = state.cwd;
+  const entry = Object.entries(NPCS).find(([id, npc])=>Array.isArray(npc.at) && npc.at.includes(currentRoom));
+  if(!entry) return "";
+  const npc = entry[1] || {};
+  return String(npc.name || "").trim().toLowerCase();
+}
+
+function suggestFolderTarget(){
+  const objective = getCurrentMainObjective();
+  const title = String((objective && objective.title) || "").toLowerCase();
+  if(title.includes("iserv") || title.includes("pc-raum")) return "/school/pcraum";
+  if(title.includes("keycard")) return "/school/pcraum";
+  if(title.includes("server-gate")) return "/server_gate";
+  if(title.includes("fragment")) return "/network";
+  if(title.includes("patchlord") || title.includes("boss")) return "/boss";
+  if(title.includes("mentor") || title.includes("squad")) return "/mentor_lab";
+  return "/home/player";
+}
+
+function getEasyModeActionsForContext(){
+  const actions = ["viewLocation", "nextQuest", "openFolder"];
+  if(getCurrentRoomNpc()) actions.splice(1, 0, "talkNpc");
+  return actions;
+}
+
+function mapEasyModeActionToCommands(actionId){
+  const action = EASY_MODE_ACTIONS[actionId];
+  if(!action || typeof action.command !== "function") return [];
+  const cmd = String(action.command() || "").trim();
+  return cmd ? [cmd] : [];
+}
+
+function executeEasyModeAction(actionId){
+  const cmds = mapEasyModeActionToCommands(actionId);
+  if(!cmds.length){
+    row("Einfach-Modus: Keine Aktion verfügbar. Nutze weiter das Terminal.", "warn");
+    return;
+  }
+  cmds.forEach((cmd, idx)=>{
+    if(window.runLineInternal){
+      window.runLineInternal(cmd, { skipHistory: idx > 0 });
+      return;
+    }
+    if(window.runLine){
+      window.runLine(cmd);
+    }
+  });
+}
+
+function renderEasyModeActions(){
+  const actionsWrap = el("easyActions");
+  if(!actionsWrap) return;
+  const actionIds = getEasyModeActionsForContext();
+  actionsWrap.innerHTML = "";
+  actionIds.forEach((actionId)=>{
+    const action = EASY_MODE_ACTIONS[actionId];
+    if(!action) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn easyActionBtn";
+    btn.innerHTML = `<span aria-hidden="true">${escapeHtml(action.icon)}</span> ${escapeHtml(action.label)}`;
+    btn.addEventListener("click", ()=>executeEasyModeAction(actionId));
+    actionsWrap.appendChild(btn);
+  });
+}
+
+function setEasyMode(enabled){
+  const bar = el("easyModeBar");
+  const actionsWrap = el("easyActions");
+  const terminalBtn = el("terminalModeBtn");
+  const easyBtn = el("easyModeBtn");
+  const panel = el("terminalPanel");
+  if(!bar || !actionsWrap || !terminalBtn || !easyBtn || !panel) return;
+
+  bar.classList.toggle("isEasyMode", !!enabled);
+  panel.classList.toggle("easyModeActive", !!enabled);
+  actionsWrap.hidden = !enabled;
+  terminalBtn.classList.toggle("isActive", !enabled);
+  easyBtn.classList.toggle("isActive", !!enabled);
+  terminalBtn.setAttribute("aria-pressed", String(!enabled));
+  easyBtn.setAttribute("aria-pressed", String(!!enabled));
+
+  if(enabled) renderEasyModeActions();
+}
 const CLIPPY_COOLDOWN_MS = 5 * 60 * 1000;
 
 function ensureClippyState(){
@@ -816,6 +931,11 @@ if(clippyBtn){
     showClippyTooltip();
   });
 }
+const terminalModeBtn = el("terminalModeBtn");
+const easyModeBtn = el("easyModeBtn");
+if(terminalModeBtn) terminalModeBtn.addEventListener("click", ()=>setEasyMode(false));
+if(easyModeBtn) easyModeBtn.addEventListener("click", ()=>setEasyMode(true));
+setEasyMode(false);
 window.addEventListener("resize", ()=>{
   positionClippyTooltip();
 });
@@ -838,6 +958,10 @@ function commitUI(opts={}){
   try{ if(o.rewards) renderRewards(); }catch(e){}
   try{ if(o.rewards) renderSidequestPanel(); }catch(e){}
   try{ syncClippyTooltip(); }catch(e){}
+  try{
+    const easyWrap = el("easyActions");
+    if(easyWrap && !easyWrap.hidden) renderEasyModeActions();
+  }catch(e){}
 
   try{
     const base = allowedCommands();

@@ -76,6 +76,14 @@ body{
     @media (max-width: 1020px){
       main{grid-template-columns:1fr; }
     }
+    @media (max-width: 760px){
+      .modeToggle, .easyActions{
+        flex-direction:column;
+      }
+      .modeToggle .btn, .easyActions .btn{
+        width:100%;
+      }
+    }
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       border:1px solid var(--line);
@@ -204,6 +212,54 @@ body{
       display:flex;
       flex-direction:column;
       height: var(--top-card-height);
+      gap:10px;
+    }
+    .easyModeBar{
+      border:1px solid rgba(124,244,176,.3);
+      border-radius:12px;
+      background: rgba(124,244,176,.08);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .modeToggle{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .modeBtn{
+      border-color: rgba(124,244,176,.35);
+      background: rgba(0,0,0,.18);
+      color:var(--muted);
+      font-weight:700;
+    }
+    .modeBtn.isActive{
+      background: rgba(124,244,176,.26);
+      color: rgba(222,255,238,.98);
+      border-color: rgba(124,244,176,.8);
+      box-shadow: 0 0 0 2px rgba(124,244,176,.15);
+    }
+    .easyModeBar.isEasyMode{
+      border-color: rgba(124,244,176,.8);
+      box-shadow: inset 0 0 0 1px rgba(124,244,176,.25);
+    }
+    .easyActions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .easyActionBtn{
+      border-color: rgba(124,244,176,.4);
+      background: rgba(124,244,176,.14);
+      color: rgba(222,255,238,.95);
+      font-size:12px;
+      padding:7px 10px;
+    }
+    .easyActionBtn:hover{ border-color: rgba(124,244,176,.75); }
+    .terminalCard.easyModeActive{
+      border-color: rgba(124,244,176,.8);
+      box-shadow: 0 12px 36px rgba(0,0,0,.45), 0 0 0 2px rgba(124,244,176,.3);
     }
 
     .storyCard{
