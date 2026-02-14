@@ -1752,28 +1752,57 @@ case "talk":{
         const raw = (args.join(" ")||"").trim();
         if(!raw) return { ok:false, out:"talk: missing npc name (z.B. talk remmers)" };
 
+        const normalizeToken = (s)=>String(s||"")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/^["'`]+|["'`]+$/g, "")
+          .replace(/[^a-z0-9äöüß]+/g, "")
+          .trim();
+        const nameTokens = (s)=>String(s||"")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/["'`]/g, "")
+          .split(/[^a-z0-9äöüß]+/)
+          .map(t=>t.trim())
+          .filter(Boolean);
+
         const query = raw.toLowerCase();
+        const qTokens = nameTokens(raw);
+        const qNormSingle = normalizeToken(raw);
         const here = state.cwd;
 
         // resolve NPC by id OR by name substring (so: talk remmers / talk zoe)
-        let id = query.split(/\s+/)[0];
+        let id = query.split(/\s+/)[0].replace(/^["'`]+|["'`]+$/g, "");
         let npc = NPCS[id];
         if(npc && !(npc.at||[]).includes(here)) npc = null;
 
         if(!npc){
           let best = null;
           let bestScore = -1;
-          const qTokens = query.split(/\s+/).filter(Boolean);
           for(const nid in NPCS){
             const n = NPCS[nid];
             if(!(n.at||[]).includes(here)) continue;
             const nm = String(n.name||"").toLowerCase();
+            const nmNormSingle = normalizeToken(n.name);
+            const nmTokens = nameTokens(n.name);
+
+            if(qNormSingle && (qNormSingle === normalizeToken(nid) || qNormSingle === nmNormSingle)){
+              best = nid;
+              bestScore = 999;
+              break;
+            }
+
             let score = 0;
             for(const t of qTokens){
-              if(nm.includes(t)) score += 2;
+              const tokNorm = normalizeToken(t);
+              if(!tokNorm) continue;
+              if(nmNormSingle.includes(tokNorm)) score += 2;
+              if(nmTokens.includes(tokNorm)) score += 3;
             }
-            const last = qTokens[qTokens.length-1];
-            if(last && nm.split(/[^a-zäöüß]+/).includes(last)) score += 3;
+            const last = normalizeToken(qTokens[qTokens.length-1]);
+            if(last && nmTokens.includes(last)) score += 3;
             if(score > bestScore){ bestScore = score; best = nid; }
           }
           if(best && bestScore >= 2){
