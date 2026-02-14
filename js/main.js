@@ -505,6 +505,74 @@ function closeStartModal(){
   el("startOverlay").hidden = true;
 }
 
+function showSavegamePanel(phrase){
+  const overlay = el("savegameOverlay");
+  const out = el("savegamePhraseOutput");
+  const hint = el("savegamePanelHint");
+  if(!overlay || !out || !hint) return;
+  out.value = phrase;
+  hint.textContent = "Tipp: Mit Kopieren oder Export musst du auf mobilen Geräten nichts manuell markieren.";
+  overlay.hidden = false;
+  out.focus();
+  out.select();
+}
+
+function closeSavegamePanel(){
+  const overlay = el("savegameOverlay");
+  if(overlay) overlay.hidden = true;
+}
+
+async function copySavegamePhrase(){
+  const out = el("savegamePhraseOutput");
+  const hint = el("savegamePanelHint");
+  if(!out || !hint) return;
+  const phrase = String(out.value || "");
+  if(!phrase){
+    hint.textContent = "Es ist noch keine Passphrase vorhanden.";
+    return;
+  }
+
+  if(navigator.clipboard && typeof navigator.clipboard.writeText === "function"){
+    try{
+      await navigator.clipboard.writeText(phrase);
+      hint.textContent = "✅ Passphrase in die Zwischenablage kopiert.";
+      return;
+    }catch(_err){
+      // fallback below
+    }
+  }
+
+  out.focus();
+  out.select();
+  hint.textContent = "⚠️ Automatisches Kopieren nicht verfügbar. Bitte manuell kopieren (Strg/Cmd + C).";
+}
+
+function exportSavegamePhrase(){
+  const out = el("savegamePhraseOutput");
+  const hint = el("savegamePanelHint");
+  if(!out || !hint) return;
+  const phrase = String(out.value || "");
+  if(!phrase){
+    hint.textContent = "Es ist noch keine Passphrase vorhanden.";
+    return;
+  }
+  const ts = new Date().toISOString().replace(/[:.]/g, "-");
+  const fileName = `schwarmshell-savegame-${ts}.txt`;
+  const blob = new Blob([`SchwarmShell Savegame Passphrase
+
+${phrase}
+`], { type:"text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  hint.textContent = `✅ Export gestartet (${fileName}).`;
+}
+
 el("startNew").addEventListener("click", ()=>{
   closeStartModal();
   startNewGuidedGame();
@@ -534,13 +602,19 @@ el("savegameConfirm").addEventListener("click", ()=>{
   const pass = el("savegamePassphrase").value;
   const result = loadStateFromPassphrase(pass);
   if(!result.ok){
-    el("savegameLoadError").textContent = result.error;
+    el("savegameLoadError").textContent = `${result.error} Beispiel für gültiges Format: SS1...`;
     return;
   }
   closeStartModal();
   el("savegameLoad").hidden = true;
   bootLoadSource = "Savegame";
   boot();
+});
+
+el("savegamePassphrase").addEventListener("keydown", (e)=>{
+  if(e.key !== "Enter") return;
+  e.preventDefault();
+  el("savegameConfirm").click();
 });
 
 el("run").addEventListener("click", ()=>{
@@ -551,9 +625,13 @@ el("run").addEventListener("click", ()=>{
 el("reset").addEventListener("click", ()=>doReset(true));
 el("savegame").addEventListener("click", ()=>{
   const phrase = createSavePassphrase();
-  row("🔐 Savegame-Passphrase erstellt. Notiere sie dir, um später an exakt dieser Stelle weiterzumachen:", "ok");
-  row(phrase, "p");
+  row("🔐 Savegame-Passphrase erstellt.", "ok");
+  showSavegamePanel(phrase);
 });
+
+el("savegamePanelClose").addEventListener("click", closeSavegamePanel);
+el("savegameCopy").addEventListener("click", ()=>{ copySavegamePhrase(); });
+el("savegameExport").addEventListener("click", exportSavegamePhrase);
 
 cmdInput.addEventListener("keydown", (e)=>{
   if(e.key === "Enter"){
