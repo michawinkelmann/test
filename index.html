@@ -28,6 +28,21 @@
   </div>
 </div>
 
+<div class="savegameOverlay" id="savegameOverlay" role="dialog" aria-modal="true" aria-labelledby="savegamePanelTitle" hidden>
+  <div class="savegamePanel" id="savegamePanel">
+    <h2 id="savegamePanelTitle">Savegame erstellen</h2>
+    <p class="small">Hier ist deine aktuelle Passphrase. Damit kannst du später exakt an dieser Stelle weiterspielen.</p>
+    <label for="savegamePhraseOutput">Passphrase</label>
+    <textarea id="savegamePhraseOutput" rows="3" readonly></textarea>
+    <p class="small" id="savegamePanelHint" aria-live="polite"></p>
+    <div class="startActions">
+      <button class="btn" id="savegameCopy" type="button">In Zwischenablage kopieren</button>
+      <button class="btn" id="savegameExport" type="button">Als .txt exportieren</button>
+      <button class="btn" id="savegamePanelClose" type="button">Schließen</button>
+    </div>
+  </div>
+</div>
+
 <div class="tutorialOverlay" id="tutorialOverlay" hidden></div>
 <div class="tutorialBubble" id="tutorialBubble" hidden>
   <p id="tutorialText">—</p>

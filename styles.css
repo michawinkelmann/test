@@ -485,6 +485,41 @@ body{
       font-family:var(--mono);
     }
 
+
+    .savegameOverlay{
+      position:fixed;
+      inset:0;
+      background:rgba(4,8,14,.82);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:2100;
+      padding:16px;
+    }
+    .savegamePanel{
+      width:min(640px, 100%);
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:linear-gradient(180deg, rgba(15,22,32,.98), rgba(9,14,20,.98));
+      box-shadow: var(--shadow);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .savegamePanel h2{ margin:0; }
+    .savegamePanel textarea{
+      width:100%;
+      min-height:84px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:10px;
+      background:rgba(255,255,255,.02);
+      color:var(--text);
+      font-family:var(--mono);
+      resize:vertical;
+    }
+
     .tutorialOverlay{
       position:fixed;
       inset:0;
