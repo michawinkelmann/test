@@ -573,6 +573,104 @@ ${phrase}
   hint.textContent = `✅ Export gestartet (${fileName}).`;
 }
 
+const RESET_UNDO_STORAGE_KEY = "schwarmshell_reset_undo_snapshot_v1";
+const RESET_UNDO_WINDOW_MS = 10_000;
+const AUTOSAVE_STORAGE_KEY = (typeof STORAGE_KEY === "string" && STORAGE_KEY) ? STORAGE_KEY : "schwarmshell_all_phases_v5";
+let resetUndoTimer = null;
+
+function readResetUndoSnapshot(){
+  try{
+    const raw = localStorage.getItem(RESET_UNDO_STORAGE_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed || typeof parsed !== "object") return null;
+    if(!parsed.passphrase || !parsed.expiresAt) return null;
+    if(Date.now() > Number(parsed.expiresAt)){
+      localStorage.removeItem(RESET_UNDO_STORAGE_KEY);
+      return null;
+    }
+    return parsed;
+  }catch(_err){
+    localStorage.removeItem(RESET_UNDO_STORAGE_KEY);
+    return null;
+  }
+}
+
+function clearResetUndoState(){
+  localStorage.removeItem(RESET_UNDO_STORAGE_KEY);
+  if(resetUndoTimer){
+    clearTimeout(resetUndoTimer);
+    resetUndoTimer = null;
+  }
+  const resetBtn = el("reset");
+  if(resetBtn) resetBtn.textContent = "Reset";
+}
+
+function startResetUndoWindow(snapshot){
+  const expiresAt = Date.now() + RESET_UNDO_WINDOW_MS;
+  localStorage.setItem(RESET_UNDO_STORAGE_KEY, JSON.stringify({
+    passphrase: snapshot.passphrase,
+    autosaveRaw: snapshot.autosaveRaw,
+    expiresAt
+  }));
+
+  const resetBtn = el("reset");
+  if(resetBtn) resetBtn.textContent = "Undo Reset (10s)";
+
+  if(resetUndoTimer) clearTimeout(resetUndoTimer);
+  resetUndoTimer = setTimeout(()=>{
+    clearResetUndoState();
+  }, RESET_UNDO_WINDOW_MS + 50);
+}
+
+function tryUndoReset(){
+  const snapshot = readResetUndoSnapshot();
+  if(!snapshot) return false;
+
+  const shouldUndo = confirm("Letzten Reset rückgängig machen? Der Spielstand vor dem Reset wird wiederhergestellt.");
+  if(!shouldUndo) return true;
+
+  const restored = loadStateFromPassphrase(snapshot.passphrase);
+  if(!restored.ok){
+    row("⚠️ Undo fehlgeschlagen: Snapshot konnte nicht geladen werden.", "warn");
+    clearResetUndoState();
+    return true;
+  }
+
+  if(snapshot.autosaveRaw){
+    localStorage.setItem(AUTOSAVE_STORAGE_KEY, snapshot.autosaveRaw);
+  }
+  clearResetUndoState();
+  term.innerHTML = "";
+  bootLoadSource = "Undo";
+  boot();
+  return true;
+}
+
+function requestResetWithSafety(){
+  if(tryUndoReset()) return;
+
+  const confirmed = confirm("Willst du wirklich resetten? Dabei wird dein Autosave gelöscht und dein Fortschritt geht verloren.");
+  if(!confirmed) return;
+
+  const wantsBackup = confirm("Optional: Vor dem Reset eine Backup-Passphrase erzeugen?");
+  if(wantsBackup){
+    const phrase = createSavePassphrase();
+    showSavegamePanel(phrase);
+    const continueReset = confirm("Backup-Passphrase wurde erzeugt. Jetzt wirklich resetten?");
+    if(!continueReset) return;
+  }
+
+  const snapshot = {
+    passphrase: createSavePassphrase(),
+    autosaveRaw: localStorage.getItem(AUTOSAVE_STORAGE_KEY)
+  };
+
+  doReset(true);
+  startResetUndoWindow(snapshot);
+  row("↩️ Undo verfügbar: 10 Sekunden über den Reset-Button.", "p");
+}
+
 el("startNew").addEventListener("click", ()=>{
   closeStartModal();
   startNewGuidedGame();
@@ -622,7 +720,7 @@ el("run").addEventListener("click", ()=>{
   cmdInput.value = "";
   runLine(v);
 });
-el("reset").addEventListener("click", ()=>doReset(true));
+el("reset").addEventListener("click", requestResetWithSafety);
 el("savegame").addEventListener("click", ()=>{
   const phrase = createSavePassphrase();
   row("🔐 Savegame-Passphrase erstellt.", "ok");
