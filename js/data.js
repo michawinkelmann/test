@@ -2018,7 +2018,7 @@ const NPCS = {
     s_7h1_3: { name:"Lina (7H1)", role:"Schüler*in", at:["/school/klassenraume/7H1"] },
     s_7h1_4: { name:"Yusuf (7H1)", role:"Schüler*in", at:["/school/klassenraume/7H1"] },
     s_7h1_5: { name:"Hannah (7H1)", role:"Schüler*in", at:["/school/klassenraume/7H1"] },
-    teacher_seiberlich_7h2: { name:"Frau Seiberlich (7H2)", role:"Lehrkraft (Englisch)", at:["/school/klassenraume/7H2"] },
+    teacher_seiberlich_7h2: { name:"Frau Seiberlich (7H2)", role:"Stellvertretende Direktorin", at:["/school/klassenraume/7H2"] },
     s_7h2_1: { name:"Maja (7H2)", role:"Schüler*in", at:["/school/klassenraume/7H2"] },
     s_7h2_2: { name:"Sam (7H2)", role:"Schüler*in", at:["/school/klassenraume/7H2"] },
     s_7h2_3: { name:"Mert (7H2)", role:"Schüler*in", at:["/school/klassenraume/7H2"] },
