@@ -105,8 +105,9 @@ function getCurrentMainObjective(){
 const CLIPPY_COOLDOWN_MS = 5 * 60 * 1000;
 
 function ensureClippyState(){
-  if(!state.clippy || typeof state.clippy !== "object") state.clippy = { lastUsedAt: 0 };
+  if(!state.clippy || typeof state.clippy !== "object") state.clippy = { lastUsedAt: 0, usageCount: 0 };
   if(!Number.isFinite(Number(state.clippy.lastUsedAt))) state.clippy.lastUsedAt = 0;
+  if(!Number.isFinite(Number(state.clippy.usageCount))) state.clippy.usageCount = 0;
 }
 
 function getClippyCooldownRemainingMs(){
@@ -125,7 +126,11 @@ function formatCooldown(ms){
 function renderClippyAvailability(){
   const btn = el("clippyHelperBtn");
   const status = el("clippyStatus");
+  const usage = el("clippyUsage");
   if(!btn || !status) return;
+
+  ensureClippyState();
+  if(usage) usage.textContent = `Nutzungen: ${Math.max(0, Number(state.clippy.usageCount)||0)}`;
 
   const remaining = getClippyCooldownRemainingMs();
   const hasObjective = !!getCurrentMainObjective();
@@ -238,6 +243,7 @@ function showClippyTooltip(){
 
   ensureClippyState();
   state.clippy.lastUsedAt = Date.now();
+  state.clippy.usageCount = Math.max(0, Number(state.clippy.usageCount)||0) + 1;
   saveState();
   renderClippyAvailability();
 
