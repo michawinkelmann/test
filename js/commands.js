@@ -395,6 +395,71 @@ function allowedCommands(){
     return Array.from(new Set(base));
   }
 
+  function levenshtein(a, b){
+    const s = String(a || "");
+    const t = String(b || "");
+    const rows = s.length + 1;
+    const cols = t.length + 1;
+    const dp = Array.from({ length: rows }, () => Array(cols).fill(0));
+    for(let i = 0; i < rows; i++) dp[i][0] = i;
+    for(let j = 0; j < cols; j++) dp[0][j] = j;
+    for(let i = 1; i < rows; i++){
+      for(let j = 1; j < cols; j++){
+        const cost = s[i - 1] === t[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + cost
+        );
+      }
+    }
+    return dp[s.length][t.length];
+  }
+
+  function isSubsequence(needle, haystack){
+    if(!needle) return true;
+    let i = 0;
+    for(let j = 0; j < haystack.length && i < needle.length; j++){
+      if(needle[i] === haystack[j]) i++;
+    }
+    return i === needle.length;
+  }
+
+  function suggestCommands(input, limit = 3){
+    const query = String(input || "").toLowerCase();
+    if(!query) return [];
+
+    const candidates = allowedCommands().map((cmd) => {
+      const candidate = cmd.toLowerCase();
+      const dist = levenshtein(query, candidate);
+      let score = dist;
+      if(candidate.startsWith(query)) score -= 1.5;
+      if(query.startsWith(candidate)) score -= 0.75;
+      if(isSubsequence(query, candidate)) score -= 0.5;
+      return { cmd, score, dist };
+    });
+
+    const ranked = candidates
+      .sort((a, b) => (a.score - b.score) || (a.dist - b.dist) || a.cmd.localeCompare(b.cmd))
+      .slice(0, limit)
+      .map((entry) => entry.cmd);
+
+    return ranked;
+  }
+
+  function unknownCommandMessage(cmd){
+    const suggestions = suggestCommands(cmd, 3);
+    let out = `Command not found: ${cmd}`;
+    if(suggestions.length){
+      out += `\nMeintest du: ${suggestions[0]} ?`;
+      if(suggestions.length > 1){
+        out += `\nWeitere Kandidaten: ${suggestions.slice(1).join(", ")}`;
+      }
+    }
+    out += "\nTipp: help | man <cmd>";
+    return out;
+  }
+
   // Mentor-Arc: Nach 3/3 geholfenen Schüler*innen taucht ein extra Prozess auf,
   // der als "Abschluss-Schalter" dient. Wird dieser Prozess gekillt, ist mentor_clear erfüllt.
   function ensureQuestAktivProcess(){
@@ -1223,17 +1288,20 @@ talk harries  /  talk pietsch`;
     const parts = trimmed.split(/\s+/);
     const c = parts[0];
 
-    // Registry-Lock: block commands that exist but are not yet unlocked
+    // Registry-Lock: bekannte Commands, aber in dieser Phase (noch) gesperrt
     const allowedNow = allowedCommands();
     if(COMMAND_REGISTRY[c] && !allowedNow.includes(c)){
-      return { ok:false, out:`${c}: (gesperrt) — erst Phase ${state.phase} spielen / Fortschritt machen.` };
+      return {
+        ok:false,
+        out:`${c}: (gesperrt) — erst Phase ${state.phase} spielen / Fortschritt machen.\nTipp: help | man ${c}`
+      };
+    }
+
+    // Unbekannter Command (nicht im Registry)
+    if(!COMMAND_REGISTRY[c]){
+      return { ok:false, out:unknownCommandMessage(c) };
     }
     const args = parts.slice(1);
-
-    const allowed = allowedCommands();
-    if(!allowed.includes(c) && c !== "man"){
-      return { ok:false, out:`Command nicht verfügbar (Phase ${state.phase}). Tipp: help` };
-    }
 
     switch(c){
       case "help":{
@@ -3896,7 +3964,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
       }
 
       default:
-        return { ok:false, out:`Command not found: ${c}` };
+        return { ok:false, out:unknownCommandMessage(c) };
     }
   }
 
