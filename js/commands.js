@@ -476,30 +476,71 @@ function allowedCommands(){
   }
 
 
+  function splitAutocompleteArg(argToken){
+    const token = String(argToken || "");
+    if(!token) return { baseInput: ".", prefix: "" };
+    if(token.endsWith("/")) return { baseInput: token, prefix: "" };
+    const slash = token.lastIndexOf("/");
+    if(slash < 0) return { baseInput: ".", prefix: token };
+    return {
+      baseInput: token.slice(0, slash + 1),
+      prefix: token.slice(slash + 1)
+    };
+  }
+
+  function joinAutocompleteCandidate(baseInput, name){
+    const base = String(baseInput || "");
+    if(!base || base === ".") return name;
+    if(base === "/") return `/${name}`;
+    return base.replace(/\/$/, "") + "/" + name;
+  }
+
   function autocomplete(partial){
-    if(!partial) return null;
-    if(partial.includes("|")) return null;
+    if(!partial || partial.includes("|")) return null;
+    const input = String(partial);
     const cmds = allowedCommands();
-    const tokens = partial.trim().split(/\s+/);
-    if(tokens.length === 1){
-      const cand = cmds.filter(c=>c.startsWith(tokens[0]));
-      return cand.length===1 ? cand[0] : null;
-    }else{
-      const cmd = tokens[0];
-      const arg = tokens.slice(1).join(" ");
-      const base = arg.includes("/") ? arg.replace(/\/+[^\/]*$/,"") : "";
-      const prefix = arg.includes("/") ? arg.split("/").pop() : arg;
-      const dirPath = normPath(base || ".");
-      const children = listDir(dirPath);
-      if(!children) return null;
-      const cand = children.filter(name=>name.startsWith(prefix));
-      if(cand.length===1){
-        const suffix = cand[0];
-        const joined = (base ? base.replace(/\/$/,"") + "/" : "") + suffix;
-        return `${cmd} ${joined}`;
-      }
-      return null;
+    const hasTrailingSpace = /\s$/.test(input);
+    const tokens = input.trim().split(/\s+/).filter(Boolean);
+    if(!tokens.length) return null;
+
+    if(tokens.length === 1 && !hasTrailingSpace){
+      const cand = cmds.filter((c)=>c.startsWith(tokens[0]));
+      return {
+        kind: "command",
+        replacement: cand.length === 1 ? cand[0] : null,
+        candidates: cand
+      };
     }
+
+    const firstSpaceIdx = input.search(/\s/);
+    if(firstSpaceIdx < 0) return null;
+    const cmd = tokens[0];
+    const argString = input.slice(firstSpaceIdx + 1);
+    const argTokens = argString.trim().length ? argString.trim().split(/\s+/) : [];
+    const activeToken = hasTrailingSpace ? "" : (argTokens[argTokens.length - 1] || "");
+    const activePrefix = hasTrailingSpace ? input : input.slice(0, input.length - activeToken.length);
+
+    const { baseInput, prefix } = splitAutocompleteArg(activeToken);
+    const dirPath = normPath(baseInput || ".");
+    const children = listDir(dirPath);
+    if(!children) return null;
+
+    const candidates = children
+      .filter((name)=>name.startsWith(prefix))
+      .map((name)=>{
+        const fullPath = (dirPath === "/" ? "" : dirPath) + "/" + name;
+        const node = getNode(fullPath);
+        const suffix = node?.type === "dir" ? "/" : "";
+        return joinAutocompleteCandidate(baseInput, name) + suffix;
+      });
+
+    return {
+      kind: "path",
+      command: cmd,
+      replacement: candidates.length === 1 ? `${activePrefix}${candidates[0]}` : null,
+      candidates,
+      activePrefix
+    };
   }
 
   function stripQuotes(s){
