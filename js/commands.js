@@ -481,13 +481,18 @@ function allowedCommands(){
     "lz_schmidt","lz_krueger","lz_nguyen","lz_brandt","lz_klein","lz_auer","lz_stein","lz_hoffmann"
   ]);
 
+  function isStudentNpc(npcId, npc){
+    const role = String((npc && npc.role) || "").toLowerCase();
+    return role.includes("schüler") || role.includes("schueler") || /^s_\d/i.test(String(npcId||"")) || /^s_/i.test(String(npcId||""));
+  }
+
   function isTeacherNpc(npcId, npc, inSchool){
     const studentIds = new Set(["noah","emma","leo"]);
-    if(inSchool) return (!studentIds.has(npcId) && !isStudent(npcId, npc));
+    if(inSchool) return (!studentIds.has(npcId) && !isStudentNpc(npcId, npc));
     return (npc && (
       /lehr|schule|direktor|sekret|beratung|schul|klassen/i.test(String(npc.role||"")) ||
       /herr|frau/i.test(String(npc.name||""))
-    ) && !isStudent(npcId, npc));
+    ) && !isStudentNpc(npcId, npc));
   }
 
   function resetNpcDialog(){
@@ -1819,6 +1824,7 @@ case "talk":{
 // Keller-Gerüchte: nur Schüler-NPCs, und nur als Anhang unter dem normalen Text
 // (Lehrkräfte geben keine Gerüchte von sich.)
 const isStudent = (nid, n) => {
+  // lokal für Rumor-Logik; globale Teacher-Erkennung nutzt isStudentNpc().
   const role = String((n && n.role) || "").toLowerCase();
   return role.includes("schüler") || role.includes("schueler") || /^s_\d/i.test(nid) || /^s_/i.test(nid);
 };
