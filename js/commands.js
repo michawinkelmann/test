@@ -471,7 +471,24 @@ function allowedCommands(){
     return { start, pattern: stripQuotes(pattern) };
   }
 
-  const NPC_DIALOG_EXCLUDED = new Set(["winkelmann","harries","pietsch","beamter","jansen","wiebe","neele","tom","holger","noah","emma","leo"]);
+  const NPC_DIALOG_EXCLUDED = new Set([
+    "winkelmann","harries","pietsch","beamter","jansen","wiebe","neele","tom","holger","noah","emma","leo",
+    // mehr klassische Lehrer-NPCs ohne Auswahlmenü
+    "groffmann","ruebke","kaluza","dumke","bauer","weymann","religa","kretzer","kraemer","kroencke",
+    "teacher_ommen_7h1","teacher_fischer_7h2","teacher_remmers_8g1","teacher_frech_8g2","teacher_steinbeck_9r1","teacher_remmers_9r2",
+    "teacher_steinbeck_10g1","teacher_semrau_10r1","teacher_frech_10h1",
+    // Lehrerzimmer-Lehrkräfte reagieren nur kurz und bestimmt
+    "lz_schmidt","lz_krueger","lz_nguyen","lz_brandt","lz_klein","lz_auer","lz_stein","lz_hoffmann"
+  ]);
+
+  function isTeacherNpc(npcId, npc, inSchool){
+    const studentIds = new Set(["noah","emma","leo"]);
+    if(inSchool) return (!studentIds.has(npcId) && !isStudent(npcId, npc));
+    return (npc && (
+      /lehr|schule|direktor|sekret|beratung|schul|klassen/i.test(String(npc.role||"")) ||
+      /herr|frau/i.test(String(npc.name||""))
+    ) && !isStudent(npcId, npc));
+  }
 
   function resetNpcDialog(){
     if(!state.npcDialog || typeof state.npcDialog !== "object") state.npcDialog = { active:false, npcId:null, nodeId:null };
@@ -1812,29 +1829,27 @@ const maybeAppendRumor = () => {
   }
 };
 
-        
-
-        // Lehrerzimmer: Lehrkräfte sind hier im "No Students Allowed"-Modus.
+        // Lehrerzimmer: Lehrkräfte reagieren verdutzt und schicken dich freundlich-bestimmt raus.
         if(here === "/school/lehrerzimmer" && String(id).startsWith("lz_")){
           const lines = [
-            "„Stopp. Das ist das Lehrerzimmer. Du bist hier nicht eingeplant.“",
-            "„Du suchst bestimmt den PC‑Raum. Der ist… nicht hier. Raus bitte.“",
-            "„Das ist kein Quest‑Hub. Das ist Büro. Und Büro hat keine Freispiele.“",
-            "„Ich sehe schon: neugierig. Aber das hier ist ‘Need‑to‑know’. Und du brauchst es nicht.“",
-            "„Wenn du irgendwas willst: Sekretariat. Wenn du nichts willst: Flur. Danke.“",
-            "„Das ist ein Personalbereich. Stell dir vor, das ist /root. Du bist nicht root.“",
-            "„Hast du ein Ticket? Nein? Dann ist das hier beendet.“",
-            "„Bitte nicht an die Schränke. Da drin ist Chaos… äh… Vertrauliches.“",
-            "„Wenn du hier weiter rumstehst, gibt’s gleich eine Sidequest: ‘Tisch wischen’.“",
-            "„Kaffee, Kopierer, Konferenz. Alles drei sind gefährlich. Geh.“"
+            "„Äh… warum bist du im Lehrerzimmer? Das ist ein Personalbereich.“",
+            "„Moment mal — Schüler*innen haben hier nichts verloren. Bitte raus auf den Flur.“",
+            "„Du bist nicht falsch abgebogen, oder? Lehrerzimmer ist kein Aufenthaltsraum für Lernende.“",
+            "„Wir haben gleich Konferenz. Du bitte jetzt direkt wieder raus, danke.“",
+            "„Das hier ist intern. Wenn du ein Anliegen hast: Sekretariat, nicht Lehrerzimmer.“",
+            "„Ich bin gerade etwas verdutzt, dass du hier einfach reinspazierst.“",
+            "„Nein, das ist nicht der PC‑Raum. Und ja: du musst leider wieder raus.“",
+            "„Bitte keine Schränke, keine Ordner, keine Ausnahmen — raus aus dem Lehrerzimmer.“",
+            "„Ich sag’s nett: falscher Raum für dich. Ab auf den Flur.“",
+            "„Du willst sicher nichts Böses — aber hier hast du wirklich nichts verloren.“"
           ];
           const spice = [
-            "(Leise) „Und falls du ‘Permission denied’ siehst: Das ist Absicht. Rechte sind nicht Deko.“",
-            "(Du hörst: „Wer hat schon wieder den Tacker versteckt?!“ … und tust so, als wärst du nie da gewesen.)",
-            "(Ein Post‑it klebt am Monitor: „grep ist wie Suchen – nur schneller.“)"
+            "(Im Hintergrund: „Wer hat den Kaffeeplan schon wieder umgehängt?!“)",
+            "(Leise) „Und falls irgendwo ‚Permission denied‘ steht: Das ist hier Absicht.“",
+            "(Du hörst hektisches Papierrascheln und entscheidest dich, lieber nicht weiter zu fragen.)"
           ];
           out += lines[Math.floor(Math.random()*lines.length)];
-          if(Math.random() < 0.45) out += "\n\n" + spice[Math.floor(Math.random()*spice.length)];
+          if(Math.random() < 0.4) out += "\n\n" + spice[Math.floor(Math.random()*spice.length)];
           saveState();
           return { ok:true, out };
         }
@@ -2866,48 +2881,40 @@ if(state.flags && state.flags.system_fixed && Math.random() < 0.20){
 
 // fallback: if it's a teacher NPC, don't be boring 😄
           const inSchool = String(state.cwd||"").startsWith("/school");
-          const studentIds = new Set(["noah","emma","leo"]);
-          // In school: treat "s_*" und Rollen mit Schüler als Schüler-NPCs.
-          const isTeacher = inSchool
-            ? (!studentIds.has(id) && !isStudent(id, npc))
-            : (npc && (
-                /lehr|schule|direktor|sekret|beratung|schul|klassen/i.test(String(npc.role||"")) ||
-                /herr|frau/i.test(String(npc.name||""))
-              ) && !isStudent(id, npc));
+          const isTeacher = isTeacherNpc(id, npc, inSchool);
 
 if(isTeacher){
-            const lines = [
-              "„Setzt euch bitte. Wir fangen an. Und ja: auch du da hinten.“",
-              "„Handys weg. Das ist keine Twitch‑Chat‑Runde.“",
-              "„Wer jetzt sagt: ‘Ich war das nicht’, erklärt gleich den Lösungsweg.“",
-              "„Erst lesen, dann tippen. Das spart uns allen Zeit.“",
-              "„Ich zähle bis drei… und dann sehen wir weiter.“",
-              "„Das ist jetzt prüfungsrelevant. Sagen wir zumindest.“",
-              "„Wer fertig ist, hilft leise. Wir sind hier nicht auf dem Schulhof.“",
-              "„Ich sehe mehr, als ihr denkt. Auch im Terminal.“",
-              "„Wenn ihr nicht weiterkommt: strukturiert vorgehen, nicht panisch klicken.“",
-              "„Heute gilt: Qualität vor Geschwindigkeit.“",
-              "„Einmal tief durchatmen. Dann nochmal sauber von vorn.“",
-              "„Nein, ‘es hat gestern noch funktioniert’ ist keine Diagnose.“",
-              "„Wer eine Fehlermeldung hat, liest sie bitte laut. Ja, genau die.“",
-              "„Wir machen das in Schritten. Schritt eins: Ruhe.“",
-              "„Ich will nicht perfekt – ich will nachvollziehbar.“",
-              "„Wenn ihr fertig seid: kontrollieren. Nicht sofort abgeben.“",
-              "„Bitte keine privaten USB‑Sticks an Schulgeräte. Danke.“",
-              "„Ich erkläre das gern nochmal. Aber mit Aufmerksamkeit.“",
-              "„Wenn ihr’s nicht versteht: fragt. Dafür sind wir hier.“",
-              "„Wir sind heute im Modus: konzentriert, aber freundlich.“",
-              "„Das ist keine Zauberei. Nur Übung.“",
-              "„Ich hab gleich eine Überraschung: eine Aufgabe.“",
-              "„Wer meint ‘das brauch ich nie’: Ihr werdet euch wundern.“",
-              "„Kurzer Check: Wer kann zusammenfassen, was wir gerade tun?“",
-              "„Wir reden nicht gegen den Bildschirm. Wir reden über Lösungen.“",
-              "„Ich verlange nicht, dass ihr’s sofort könnt – aber dass ihr’s versucht.“",
-              "„Ab hier: leise Arbeitsphase.“",
-              "„Wer Hilfe braucht: Handzeichen. Kein Ruf‑Spam.“",
-              "„Und jetzt alle: speichern.“",
-              "„Heute ist ein guter Tag, um sauber zu arbeiten.“"
-            ];
+            const inClassroom = String(state.cwd||"").startsWith("/school/klassenraume");
+            const inTeacherRoom = String(state.cwd||"") === "/school/lehrerzimmer";
+            let lines;
+            if(inTeacherRoom){
+              lines = [
+                "„Warum bist du im Lehrerzimmer? Bitte geh direkt wieder raus.“",
+                "„Schüler*innen gehören gerade nicht hierher. Ab auf den Flur, danke.“",
+                "„Wir sind mitten in internen Absprachen. Das ist kein Raum für dich.“",
+                "„Hier hast du nichts verloren — bitte sofort zurück in den öffentlichen Bereich.“",
+                "„Ich bin ehrlich etwas verdutzt, dich hier zu sehen. Raus bitte.“"
+              ];
+            } else if(inClassroom){
+              lines = [
+                "„Wir haben Unterricht. Bitte nicht stören und leise sein.“",
+                "„Setz dich hin oder geh raus — aber unterbrich den Unterricht nicht.“",
+                "„Ich erkläre gerade den Stoff. Fragen gern, aber ohne Chaos.“",
+                "„Das ist Unterrichtszeit, keine Pause. Bitte halte dich an den Ablauf.“",
+                "„Wenn du nicht zu diesem Kurs gehörst: jetzt bitte den Raum verlassen.“"
+              ];
+            } else {
+              lines = [
+                "„Erst lesen, dann tippen. Das spart uns allen Zeit.“",
+                "„Wer jetzt sagt: ‘Ich war das nicht’, erklärt gleich den Lösungsweg.“",
+                "„Nein, ‘es hat gestern noch funktioniert’ ist keine Diagnose.“",
+                "„Wir machen das in Schritten. Schritt eins: Ruhe.“",
+                "„Heute gilt: Qualität vor Geschwindigkeit.“",
+                "„Wenn ihr nicht weiterkommt: strukturiert vorgehen, nicht panisch klicken.“",
+                "„Wer Hilfe braucht: Handzeichen. Kein Ruf‑Spam.“",
+                "„Und jetzt alle: speichern.“"
+              ];
+            }
             out += lines[Math.floor(Math.random()*lines.length)];
           } else {
             const lines = [
