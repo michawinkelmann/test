@@ -2000,7 +2000,7 @@ const NPCS = {
     biringer: { name:"Christian Biringer", role:"Sozialarbeit", at:["/school/beratung"] },
     jeske: { name:"Simona Jeske", role:"Beratung", at:["/school/beratung","/arena"] },
     // Lehrerzimmer (neu) — zufällige Namen aus eurer Liste
-    lz_schmidt: { name:"Frau Claudia Macke", role:"Lehrkraft (Mathe)", at:[] },
+    lz_schmidt: { name:"Frau Claudia Macke", role:"Lehrkraft (Mathe) — Lehrerzimmer", at:["/school/lehrerzimmer"] },
     lz_krueger: { name:"Frau Agnieszka Marx", role:"Lehrkraft (Werte und Normen) — Lehrerzimmer", at:["/school/lehrerzimmer"] },
     lz_nguyen: { name:"Herr Sascha Neubert", role:"Lehrkraft (Geschichte) — Lehrerzimmer", at:["/school/lehrerzimmer"] },
     lz_brandt: { name:"Frau Chiara Potinius", role:"Lehrkraft (Sport) — Lehrerzimmer", at:["/school/lehrerzimmer"] },
