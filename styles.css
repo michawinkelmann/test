@@ -18,7 +18,7 @@ html,body{height:100%;}
 [hidden]{ display:none !important; }
 body{
       margin:0;
-      background: linear-gradient(180deg, #0b0f14 0%, #0a0e13 55%, #090d12 100%);
+      background: linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 85%, #000) 60%, #05080d 100%);
       color:var(--text);
       font-family:var(--sans);
     }
@@ -53,6 +53,28 @@ body{
       border-radius:999px;
       color:var(--muted);
       background:rgba(255,255,255,.03);
+    }
+
+
+    .viewModes{
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .modeToggle{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:var(--muted);
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.03);
+    }
+    .modeToggle input{
+      accent-color: var(--accent);
     }
     .sub{
       margin:8px 0 0 0;
@@ -540,3 +562,65 @@ body{
     .tutorialBubble p{ margin:0 0 10px 0; font-size:13px; line-height:1.45; }
     .tutorialFocus{ position:relative; z-index:1550; box-shadow:0 0 0 2px rgba(124,244,176,.6), 0 0 0 9999px rgba(5,8,14,.58); }
     .tutorialInputFocus{ box-shadow:0 0 0 2px rgba(124,244,176,.75); border-radius:12px; }
+
+
+body.reading-mode{
+  font-size:18px;
+  line-height:1.75;
+  --shadow: 0 4px 14px rgba(0,0,0,.22);
+}
+body.reading-mode .sub,
+body.reading-mode .desc,
+body.reading-mode .objHint,
+body.reading-mode .small,
+body.reading-mode .footerTips,
+body.reading-mode .phaseCommandsList,
+body.reading-mode .mapTree,
+body.reading-mode .terminal,
+body.reading-mode input[type="text"]{
+  font-size:15px;
+  line-height:1.75;
+}
+body.reading-mode .card,
+body.reading-mode .terminal,
+body.reading-mode .inputBar,
+body.reading-mode .phaseCommands,
+body.reading-mode .reward,
+body.reading-mode .obj{
+  box-shadow:none;
+  background: rgba(8,12,18,.9);
+}
+body.reading-mode .mapCurrentEntry{
+  text-shadow:none;
+}
+body.reading-mode .current,
+body.reading-mode .rowLatestInput,
+body.reading-mode .rowLatestOutput{
+  box-shadow: inset 0 0 0 2px rgba(124,244,176,.38);
+}
+body.high-contrast{
+  --bg:#05070b;
+  --panel:#070c14;
+  --panel2:#060a12;
+  --text:#f7fbff;
+  --muted:#c9d6e8;
+  --line:#8fa2bd;
+  --accent:#92ffbf;
+  --warn:#ffd876;
+  --bad:#ff8b8b;
+}
+body.high-contrast .card,
+body.high-contrast .terminal,
+body.high-contrast .inputBar,
+body.high-contrast .modeToggle,
+body.high-contrast .btn,
+body.high-contrast .kbd,
+body.high-contrast .phaseCommands,
+body.high-contrast .obj,
+body.high-contrast .reward,
+body.high-contrast .mapTree{
+  border-color: var(--line);
+}
+body.high-contrast .terminalCard{
+  border-color: var(--accent);
+}

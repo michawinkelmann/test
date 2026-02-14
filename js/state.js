@@ -1,7 +1,7 @@
 // state.js — save/load state and phase progression
-  const STORAGE_KEY = "schwarmshell_all_phases_v5";
+  const STORAGE_KEY = "schwarmshell_all_phases_v6";
   const INITIAL_STATE = {
-    v: 5,
+    v: 6,
     startedAt: null,
     phase: 1,
     cwd: "/home/player",
@@ -54,7 +54,8 @@
     superpc: { active:false, returnCwd:"" },
     npcDialog: { active:false, npcId:null, nodeId:null },
     mapVisited: ["/home/player"],
-    clippy: { lastUsedAt: 0, usageCount: 0 }
+    clippy: { lastUsedAt: 0, usageCount: 0 },
+    ui: { readingMode:false, highContrast:false }
   };
 
   function normalizeState(candidate){
@@ -62,10 +63,10 @@
       const s = JSON.parse(JSON.stringify(candidate));
       if(!s || typeof s !== "object") return structuredClone(INITIAL_STATE);
 
-      if(s.v === 4){
+      if(s.v === 4 || s.v === 5){
         const merged = structuredClone(INITIAL_STATE);
         for(const k of Object.keys(s)) merged[k] = s[k];
-        merged.v = 5;
+        merged.v = 6;
         merged.flags = Object.assign({}, INITIAL_STATE.flags, (s.flags||{}));
         merged.mentor = Object.assign({}, INITIAL_STATE.mentor, (s.mentor||{}));
         merged.sidequest = Object.assign({}, INITIAL_STATE.sidequest, (s.sidequest||{}));
@@ -74,7 +75,7 @@
         return merged;
       }
 
-      if(s.v !== 5) return structuredClone(INITIAL_STATE);
+      if(s.v !== 6) return structuredClone(INITIAL_STATE);
       s.flags = Object.assign({}, INITIAL_STATE.flags, (s.flags||{}));
       s.mentor = Object.assign({}, INITIAL_STATE.mentor, (s.mentor||{}));
       s.sidequest = Object.assign({}, INITIAL_STATE.sidequest, (s.sidequest||{}));
@@ -84,6 +85,9 @@
       if(!Array.isArray(s.mapVisited)) s.mapVisited = ["/home/player"];
       s.clippy = Object.assign({}, INITIAL_STATE.clippy, (s.clippy||{}));
       if(!Number.isFinite(Number(s.clippy.usageCount))) s.clippy.usageCount = 0;
+      s.ui = Object.assign({}, INITIAL_STATE.ui, (s.ui||{}));
+      s.ui.readingMode = !!s.ui.readingMode;
+      s.ui.highContrast = !!s.ui.highContrast;
       return s;
     }catch(e){
       return structuredClone(INITIAL_STATE);

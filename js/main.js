@@ -575,7 +575,7 @@ ${phrase}
 
 const RESET_UNDO_STORAGE_KEY = "schwarmshell_reset_undo_snapshot_v1";
 const RESET_UNDO_WINDOW_MS = 10_000;
-const AUTOSAVE_STORAGE_KEY = (typeof STORAGE_KEY === "string" && STORAGE_KEY) ? STORAGE_KEY : "schwarmshell_all_phases_v5";
+const AUTOSAVE_STORAGE_KEY = (typeof STORAGE_KEY === "string" && STORAGE_KEY) ? STORAGE_KEY : "schwarmshell_all_phases_v6";
 let resetUndoTimer = null;
 
 function readResetUndoSnapshot(){
@@ -669,6 +669,29 @@ function requestResetWithSafety(){
   doReset(true);
   startResetUndoWindow(snapshot);
   row("↩️ Undo verfügbar: 10 Sekunden über den Reset-Button.", "p");
+}
+
+
+function applyViewModes(){
+  if(!state.ui || typeof state.ui !== "object") state.ui = { readingMode:false, highContrast:false };
+  state.ui.readingMode = !!state.ui.readingMode;
+  state.ui.highContrast = !!state.ui.highContrast;
+
+  document.body.classList.toggle("reading-mode", state.ui.readingMode);
+  document.body.classList.toggle("high-contrast", state.ui.highContrast);
+
+  const readingToggle = el("toggleReadingMode");
+  if(readingToggle) readingToggle.checked = state.ui.readingMode;
+  const contrastToggle = el("toggleHighContrast");
+  if(contrastToggle) contrastToggle.checked = state.ui.highContrast;
+}
+
+function setViewMode(key, enabled){
+  if(!state.ui || typeof state.ui !== "object") state.ui = { readingMode:false, highContrast:false };
+  if(!(key in state.ui)) return;
+  state.ui[key] = !!enabled;
+  applyViewModes();
+  saveState();
 }
 
 el("startNew").addEventListener("click", ()=>{
@@ -824,6 +847,23 @@ setInterval(()=>{
   renderClippyAvailability();
 }, 1000);
 renderClippyAvailability();
+
+
+const readingModeToggle = el("toggleReadingMode");
+if(readingModeToggle){
+  readingModeToggle.addEventListener("change", ()=>{
+    setViewMode("readingMode", readingModeToggle.checked);
+  });
+}
+
+const highContrastToggle = el("toggleHighContrast");
+if(highContrastToggle){
+  highContrastToggle.addEventListener("change", ()=>{
+    setViewMode("highContrast", highContrastToggle.checked);
+  });
+}
+
+applyViewModes();
 
 showStartModal();
 
