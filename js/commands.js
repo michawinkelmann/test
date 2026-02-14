@@ -473,12 +473,8 @@ function allowedCommands(){
 
   const NPC_DIALOG_EXCLUDED = new Set([
     "winkelmann","harries","pietsch","beamter","jansen","wiebe","neele","tom","holger","noah","emma","leo",
-    // mehr klassische Lehrer-NPCs ohne Auswahlmenü
-    "groffmann","ruebke","kaluza","dumke","bauer","weymann","religa","kretzer","kraemer","kroencke",
-    "teacher_ommen_7h1","teacher_fischer_7h2","teacher_remmers_8g1","teacher_frech_8g2","teacher_steinbeck_9r1","teacher_remmers_9r2",
-    "teacher_steinbeck_10g1","teacher_semrau_10r1","teacher_frech_10h1",
-    // Lehrerzimmer-Lehrkräfte reagieren nur kurz und bestimmt
-    "lz_schmidt","lz_krueger","lz_nguyen","lz_brandt","lz_klein","lz_auer","lz_stein","lz_hoffmann"
+    // nur Story-/Spezial-NPCs ohne Auswahlmenü
+    "groffmann","ruebke","kaluza","dumke","bauer","weymann"
   ]);
 
   function isStudentNpc(npcId, npc){
@@ -634,6 +630,155 @@ function allowedCommands(){
       ]
     };
     return pools[key] || pools.general;
+  }
+
+  function pickRandom(arr){
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
+
+  function getTeacherRoomLabel(cwd){
+    const room = String(cwd || "");
+    if(room === "/school/lehrerzimmer") return "lehrerzimmer";
+    if(room.startsWith("/school/klassenraume")) return "klassenzimmer";
+    if(room === "/school/pcraum") return "pcraum";
+    if(room === "/school/digitallab") return "digitallab";
+    if(room === "/school/turnhalle") return "turnhalle";
+    if(room === "/school/musikraum") return "musikraum";
+    if(room === "/school/kunstraum") return "kunstraum";
+    if(room === "/school/chemie") return "chemie";
+    if(room === "/school/biologie") return "biologie";
+    if(room === "/school/bibliothek") return "bibliothek";
+    if(room === "/school/beratung") return "beratung";
+    return "schule";
+  }
+
+  function getTeacherFlavorLine(npc, cwd){
+    const roleText = String((npc && npc.role) || "");
+    const subjectKey = normalizeTeacherRoleKey(roleText);
+    const roomKey = getTeacherRoomLabel(cwd);
+    const roomPools = {
+      lehrerzimmer:[
+        "„Das Lehrerzimmer ist Arbeitsbereich. Wenn du ein Anliegen hast, bitte übers Sekretariat.“",
+        "„Wir sind hier mitten in Planung und Korrektur. Bitte zurück in den öffentlichen Bereich.“",
+        "„Zwischen Konferenzmappen und Kaffeeplan ist hier kein Platz für Besucher*innen.“",
+        "„Interne Unterlagen bleiben intern. Bitte verlasse das Lehrerzimmer wieder.“"
+      ],
+      klassenzimmer:[
+        "„Unterrichtszeit heißt: klare Struktur, klare Fragen, klare Antworten.“",
+        "„Wir bleiben beim Thema und arbeiten den Stoff Schritt für Schritt durch.“",
+        "„Wenn du was wissen willst: Handzeichen, dann klären wir’s sauber.“"
+      ],
+      pcraum:[
+        "„Im PC-Raum gilt: erst lesen, dann klicken, dann dokumentieren.“",
+        "„Keine wilden Tabs. Wir arbeiten reproduzierbar, nicht zufällig.“",
+        "„Technikfehler sind Lernanlässe — wenn man sie ordentlich protokolliert.“"
+      ],
+      digitallab:[
+        "„Im Digital-Lab zählt nicht Show, sondern ein nachvollziehbarer Workflow.“",
+        "„Hier testen wir iterativ: Hypothese, Versuch, Auswertung.“",
+        "„Projektarbeit heißt: Versionen sichern, Entscheidungen begründen.“"
+      ],
+      turnhalle:[
+        "„In der Halle gilt: Sicherheit vor Tempo, Technik vor Risiko.“",
+        "„Wir starten sauber aufgewärmt — Verletzungen sind kein Achievement.“",
+        "„Teamplay, Fairness, Fokus: das ist heute der eigentliche Lerninhalt.“"
+      ],
+      musikraum:[
+        "„Im Musikraum hörst du nicht nur zu — du reagierst aufeinander.“",
+        "„Rhythmus hält die Gruppe zusammen. Also: erst zählen, dann einsetzen.“",
+        "„Jede Probe lebt von Präzision und Rücksicht, nicht von Lautstärke.“"
+      ],
+      kunstraum:[
+        "„Im Kunstraum zählt Idee plus Begründung, nicht nur ‘sieht cool aus’.“",
+        "„Skizze, Entscheidung, Überarbeitung — das ist der eigentliche Prozess.“",
+        "„Material ist Sprache. Nutze es bewusst, nicht nur dekorativ.“"
+      ],
+      chemie:[
+        "„Im Chemieraum gilt: Schutz zuerst, Experiment danach.“",
+        "„Beobachtung vor Interpretation — erst was passiert, dann warum.“",
+        "„Saubere Protokolle sind hier genauso wichtig wie das Ergebnis.“"
+      ],
+      biologie:[
+        "„Im Bioraum arbeiten wir präzise: beobachten, vergleichen, einordnen.“",
+        "„Lebende Systeme sind komplex — deshalb argumentieren wir mit Daten, nicht Bauchgefühl.“",
+        "„Biologie beginnt bei Details und endet bei Zusammenhängen.“"
+      ],
+      bibliothek:[
+        "„In der Bibliothek spricht man leise, denkt aber sehr laut.“",
+        "„Quelle, Beleg, Schlussfolgerung — so wird aus Recherche Erkenntnis.“",
+        "„Nimm dir Zeit fürs Lesen; Geschwindigkeit ersetzt kein Verständnis.“"
+      ],
+      beratung:[
+        "„Im Beratungsraum geht es um nächste Schritte, nicht um perfekte Antworten.“",
+        "„Wir sortieren erst die Lage und planen dann realistische Ziele.“",
+        "„Gute Beratung heißt: zuhören, konkretisieren, verabreden.“"
+      ],
+      schule:[
+        "„Schulalltag läuft besser mit klaren Absprachen und ruhigem Kopf.“",
+        "„Wenn etwas hakt: Problem benennen, Option prüfen, Entscheidung treffen.“",
+        "„Lernen ist kein Sprint — es ist saubere, wiederholte Praxis.“"
+      ]
+    };
+    const subjectPools = {
+      math:[
+        "„In Mathe zählt der Lösungsweg. Ergebnis ohne Begründung ist nur geraten.“",
+        "„Struktur schlägt Tempo: erst gegeben/gesucht, dann Rechnung.“",
+        "„Jeder Rechenschritt muss überprüfbar sein — das ist die eigentliche Kompetenz.“"
+      ],
+      german:[
+        "„Im Deutschunterricht trägt jedes Argument einen Beleg, sonst bleibt es Behauptung.“",
+        "„Präzise Sprache ist kein Extra, sondern Teil der Aufgabe.“",
+        "„Textverständnis heißt: zwischen den Zeilen begründet lesen.“"
+      ],
+      english:[
+        "„In Englisch gilt: sprechen trotz Fehlern — Kommunikation vor Perfektion.“",
+        "„Use simple structures first, then add detail.“",
+        "„Vocabulary grows only when you use it actively.“"
+      ],
+      history:[
+        "„Geschichte ist Deutung mit Quellen, nicht nur Jahreszahlen auswendig.“",
+        "„Wir trennen Ereignis, Perspektive und Bewertung sauber voneinander.“",
+        "„Ohne Kontext bleibt selbst ein Fakt missverständlich.“"
+      ],
+      sport:[
+        "„Im Sport zählt Technik plus Fairness, nicht nur das Ergebnis.“",
+        "„Konzentration im Ablauf spart Kraft und verhindert Fehler.“",
+        "„Leistung wächst mit Disziplin, nicht mit Hektik.“"
+      ],
+      art:[
+        "„Kunst heißt Entscheidungen sichtbar machen und begründen können.“",
+        "„Idee, Form, Wirkung — diese drei Ebenen schauen wir uns immer an.“",
+        "„Mut zur Überarbeitung ist oft der Schritt zur besseren Arbeit.“"
+      ],
+      chemistry:[
+        "„Chemie braucht Genauigkeit: Mengen, Reihenfolge, Sicherheit.“",
+        "„Reaktionen erklären wir mit Teilchenmodell und Beobachtung.“",
+        "„Wer sauber misst, versteht später auch sauber.“"
+      ],
+      biology:[
+        "„Biologie erklärt Zusammenhänge — vom Detail zum System.“",
+        "„Wir arbeiten hypothesengeleitet, nicht nach Gefühl.“",
+        "„Wer Prozesse versteht, kann auch Ausnahmen einordnen.“"
+      ],
+      geography:[
+        "„Erdkunde verbindet Raum, Ressourcen und menschliche Entscheidungen.“",
+        "„Karten lesen heißt Muster erkennen und Ursachen erklären.“",
+        "„Lokale Beobachtung ohne globalen Kontext ist zu kurz gedacht.“"
+      ],
+      ethics:[
+        "„In Werte und Normen zählt die Begründung, nicht Lautstärke.“",
+        "„Wir prüfen Positionen fair, auch wenn wir sie nicht teilen.“",
+        "„Gute Urteile entstehen durch Perspektivwechsel und klare Kriterien.“"
+      ],
+      general:[
+        "„Professionell arbeiten heißt: ruhig analysieren, dann handeln.“",
+        "„Wir lösen Probleme nachvollziehbar, damit andere anknüpfen können.“",
+        "„Lernen gelingt besser mit Klarheit als mit Druck.“"
+      ]
+    };
+    const roomLine = pickRandom(roomPools[roomKey] || roomPools.schule);
+    const subjectLine = pickRandom(subjectPools[subjectKey] || subjectPools.general);
+    return pickRandom([roomLine, subjectLine]);
   }
 
   function buildNpcDialogTree(npcId, npc){
@@ -2522,7 +2667,7 @@ GG.
          
           };
           const pick = (lines[subj] || ["„Okay, heute machen wir Unterricht. Überraschung.“"]);
-          out += pick[Math.floor(Math.random()*pick.length)];
+          out += pickRandom([pick[Math.floor(Math.random()*pick.length)], getTeacherFlavorLine(npc, state.cwd)]);
         maybeAppendRumor();
         saveState();
         return { ok:true, out };
@@ -2906,7 +3051,10 @@ if(state.flags && state.flags.system_fixed && Math.random() < 0.20){
           return { ok:true, out };
         }
 // generische NPCs (keine Sidequestgeber, nicht Winkelmann) bekommen Mehrstufen-Dialoge
-        if(!NPC_DIALOG_EXCLUDED.has(id)){
+        const inSchool = String(state.cwd||"").startsWith("/school");
+        const isTeacher = isTeacherNpc(id, npc, inSchool);
+
+        if(!NPC_DIALOG_EXCLUDED.has(id) && !isTeacher){
           state.npcDialog = { active:true, npcId:id, nodeId:"start" };
           out = renderNpcDialogNode(id, npc);
           saveState();
@@ -2915,42 +3063,9 @@ if(state.flags && state.flags.system_fixed && Math.random() < 0.20){
         }
 
 // fallback: if it's a teacher NPC, don't be boring 😄
-          const inSchool = String(state.cwd||"").startsWith("/school");
-          const isTeacher = isTeacherNpc(id, npc, inSchool);
 
 if(isTeacher){
-            const inClassroom = String(state.cwd||"").startsWith("/school/klassenraume");
-            const inTeacherRoom = String(state.cwd||"") === "/school/lehrerzimmer";
-            let lines;
-            if(inTeacherRoom){
-              lines = [
-                "„Warum bist du im Lehrerzimmer? Bitte geh direkt wieder raus.“",
-                "„Schüler*innen gehören gerade nicht hierher. Ab auf den Flur, danke.“",
-                "„Wir sind mitten in internen Absprachen. Das ist kein Raum für dich.“",
-                "„Hier hast du nichts verloren — bitte sofort zurück in den öffentlichen Bereich.“",
-                "„Ich bin ehrlich etwas verdutzt, dich hier zu sehen. Raus bitte.“"
-              ];
-            } else if(inClassroom){
-              lines = [
-                "„Wir haben Unterricht. Bitte nicht stören und leise sein.“",
-                "„Setz dich hin oder geh raus — aber unterbrich den Unterricht nicht.“",
-                "„Ich erkläre gerade den Stoff. Fragen gern, aber ohne Chaos.“",
-                "„Das ist Unterrichtszeit, keine Pause. Bitte halte dich an den Ablauf.“",
-                "„Wenn du nicht zu diesem Kurs gehörst: jetzt bitte den Raum verlassen.“"
-              ];
-            } else {
-              lines = [
-                "„Erst lesen, dann tippen. Das spart uns allen Zeit.“",
-                "„Wer jetzt sagt: ‘Ich war das nicht’, erklärt gleich den Lösungsweg.“",
-                "„Nein, ‘es hat gestern noch funktioniert’ ist keine Diagnose.“",
-                "„Wir machen das in Schritten. Schritt eins: Ruhe.“",
-                "„Heute gilt: Qualität vor Geschwindigkeit.“",
-                "„Wenn ihr nicht weiterkommt: strukturiert vorgehen, nicht panisch klicken.“",
-                "„Wer Hilfe braucht: Handzeichen. Kein Ruf‑Spam.“",
-                "„Und jetzt alle: speichern.“"
-              ];
-            }
-            out += lines[Math.floor(Math.random()*lines.length)];
+            out += getTeacherFlavorLine(npc, state.cwd);
           } else {
             const lines = [
               "„Yo. Was geht?“",
