@@ -43,6 +43,10 @@ let guidedTutorial = {
   taskStep:0
 };
 let bootLoadSource = "Autosave";
+const PHASE_REFLECTIONS = window.SCHWARM_DATA?.PHASE_REFLECTIONS || {};
+let reflectionTimerId = null;
+let reflectionSecondsLeft = 0;
+let lastObservedPhase = Number(state.phase) || 1;
 
 
 const CLIPPY_SOLUTIONS = {
@@ -78,6 +82,109 @@ const CLIPPY_SOLUTIONS = {
   chmod: { subtitle:"Script ausführbar machen.", steps:[ 'Setze das Ausführrecht: <code>chmod +x ~/workbench/patchlord.sh</code>.', 'Starte testweise: <code>./workbench/patchlord.sh</code> oder nach <code>cd ~/workbench</code> mit <code>./patchlord.sh</code>.', 'Bei „Permission denied“: Pfad prüfen und chmod auf exakt dieselbe Datei erneut ausführen.', 'Anschließend mit <code>quests</code> den Haken prüfen.' ], hint:'Erklärung: Ohne Execute-Bit kann ein Script trotz korrektem Inhalt nicht laufen.' },
   boss: { subtitle:"Bossfight final ausführen.", steps:[ 'Stelle sicher, dass Hotfix + chmod bereits erledigt sind.', 'Wechsle in die Workbench und starte das Script mit den im Spiel geforderten Tokens/Argumenten.', 'Achte auf exakte Schreibweise und Reihenfolge der Argumente.', 'Wenn erfolgreich, Fortschritt mit <code>quests</code> bestätigen und zum nächsten Story-Schritt weitergehen.' ], hint:'Erklärung: Finale Quests prüfen vor allem Genauigkeit bei Argumenten.' }
 };
+
+
+function closeReflectionModal(){
+  const overlay = el("reflectionOverlay");
+  const takeaway = el("reflectionTakeaway");
+  if(reflectionTimerId){
+    clearInterval(reflectionTimerId);
+    reflectionTimerId = null;
+  }
+  reflectionSecondsLeft = 0;
+  if(overlay) overlay.hidden = true;
+  if(takeaway){
+    takeaway.hidden = true;
+    takeaway.textContent = "";
+  }
+}
+
+function markReflectionShown(phase){
+  if(!state.reflections || typeof state.reflections !== "object") state.reflections = { shownPhases:[] };
+  if(!Array.isArray(state.reflections.shownPhases)) state.reflections.shownPhases = [];
+  if(!state.reflections.shownPhases.includes(phase)) state.reflections.shownPhases.push(phase);
+}
+
+function wasReflectionShown(phase){
+  const shown = state.reflections && Array.isArray(state.reflections.shownPhases) ? state.reflections.shownPhases : [];
+  return shown.includes(phase);
+}
+
+function buildTakeawayCardText(phase, title, selectedOption){
+  return [
+    `Takeaway-Karte · Phase ${phase}`,
+    `${title}`,
+    `Gewählte Alltagssituation: ${selectedOption}`,
+    "Gesprächsimpuls für Lehrkräfte:",
+    `"Wo genau brauchst du das diese Woche konkret und welcher erste Schritt ist realistisch?"`
+  ].join("\n");
+}
+
+function showPhaseReflection(phase){
+  const payload = PHASE_REFLECTIONS[phase];
+  if(!payload || wasReflectionShown(phase)) return;
+
+  const overlay = el("reflectionOverlay");
+  const prompt = el("reflectionPrompt");
+  const title = el("reflectionTitle");
+  const timer = el("reflectionTimer");
+  const optionsWrap = el("reflectionOptions");
+  const takeaway = el("reflectionTakeaway");
+  if(!overlay || !prompt || !title || !timer || !optionsWrap || !takeaway) return;
+
+  title.textContent = payload.title || "Wo brauchst du das im echten Leben?";
+  prompt.textContent = payload.prompt || "Wähle eine alltagsnahe Antwortoption.";
+  optionsWrap.innerHTML = "";
+  takeaway.hidden = true;
+  takeaway.textContent = "";
+
+  let selectedOption = "";
+  (payload.options || []).slice(0,3).forEach((opt, idx)=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn reflectionOption";
+    btn.textContent = opt;
+    btn.addEventListener("click", ()=>{
+      selectedOption = opt;
+      const optionButtons = optionsWrap.querySelectorAll(".reflectionOption");
+      optionButtons.forEach((b)=>b.classList.remove("isSelected"));
+      btn.classList.add("isSelected");
+      takeaway.hidden = false;
+      takeaway.textContent = buildTakeawayCardText(phase, payload.title || "Reflexion", selectedOption);
+    });
+    optionsWrap.appendChild(btn);
+    if(idx === 0){
+      btn.click();
+    }
+  });
+
+  reflectionSecondsLeft = 30;
+  timer.textContent = `Noch ${reflectionSecondsLeft} Sekunden`;
+  overlay.hidden = false;
+
+  if(reflectionTimerId) clearInterval(reflectionTimerId);
+  reflectionTimerId = setInterval(()=>{
+    reflectionSecondsLeft -= 1;
+    if(reflectionSecondsLeft <= 0){
+      closeReflectionModal();
+      return;
+    }
+    timer.textContent = `Noch ${reflectionSecondsLeft} Sekunden`;
+  }, 1000);
+
+  markReflectionShown(phase);
+  saveState();
+}
+
+function checkPhaseReflectionTransition(){
+  const currentPhase = Number(state.phase) || 1;
+  if(currentPhase > lastObservedPhase){
+    for(let p = lastObservedPhase; p < currentPhase; p += 1){
+      showPhaseReflection(p);
+    }
+  }
+  lastObservedPhase = currentPhase;
+}
 
 function objectiveKeyFromTitle(title){
   const t = String(title||"").toLowerCase();
@@ -820,8 +927,13 @@ window.addEventListener("resize", ()=>{
   positionClippyTooltip();
 });
 
+const reflectionCloseBtn = el("reflectionClose");
+if(reflectionCloseBtn){
+  reflectionCloseBtn.addEventListener("click", closeReflectionModal);
+}
 setInterval(()=>{
   renderClippyAvailability();
+  checkPhaseReflectionTransition();
 }, 1000);
 renderClippyAvailability();
 

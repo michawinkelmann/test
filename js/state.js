@@ -54,7 +54,8 @@
     superpc: { active:false, returnCwd:"" },
     npcDialog: { active:false, npcId:null, nodeId:null },
     mapVisited: ["/home/player"],
-    clippy: { lastUsedAt: 0, usageCount: 0 }
+    clippy: { lastUsedAt: 0, usageCount: 0 },
+    reflections: { shownPhases: [] }
   };
 
   function normalizeState(candidate){
@@ -71,6 +72,8 @@
         merged.sidequest = Object.assign({}, INITIAL_STATE.sidequest, (s.sidequest||{}));
         merged.jobArc = Object.assign({}, INITIAL_STATE.jobArc, (s.jobArc||{}));
         merged.npcDialog = Object.assign({}, INITIAL_STATE.npcDialog, (s.npcDialog||{}));
+        merged.reflections = Object.assign({}, INITIAL_STATE.reflections, (s.reflections||{}));
+        if(!Array.isArray(merged.reflections.shownPhases)) merged.reflections.shownPhases = [];
         return merged;
       }
 
@@ -84,6 +87,8 @@
       if(!Array.isArray(s.mapVisited)) s.mapVisited = ["/home/player"];
       s.clippy = Object.assign({}, INITIAL_STATE.clippy, (s.clippy||{}));
       if(!Number.isFinite(Number(s.clippy.usageCount))) s.clippy.usageCount = 0;
+      s.reflections = Object.assign({}, INITIAL_STATE.reflections, (s.reflections||{}));
+      if(!Array.isArray(s.reflections.shownPhases)) s.reflections.shownPhases = [];
       return s;
     }catch(e){
       return structuredClone(INITIAL_STATE);

@@ -2118,6 +2118,54 @@ const OBJECTIVES = [
     { phase:5, title:"Abschluss: Jobangebot sichern", key:"jobangebot", hint:"Zurück zum Arbeitsamt: talk beamter", done:(s)=>!!(s.flags && s.flags.job_arc_done) },
 ];
 
+const PHASE_REFLECTIONS = {
+  1: {
+    title:"Wo brauchst du das im echten Leben?",
+    prompt:"Du hast Navigation und Grundlagen gemeistert. Wo begegnet dir das im Alltag?",
+    options:[
+      "Dateien auf Laptop/Tablet schneller wiederfinden.",
+      "In Ordnern Ordnung halten statt alles auf dem Desktop zu sammeln.",
+      "Anleitungen lesen und Schritt für Schritt ausführen."
+    ]
+  },
+  2: {
+    title:"Wo brauchst du das im echten Leben?",
+    prompt:"Du hast gesucht, gefiltert und Informationen kombiniert. Wofür hilft das außerhalb des Spiels?",
+    options:[
+      "In langen Chats oder Dokumenten wichtige Infos gezielt herausfiltern.",
+      "Fehlerhinweise schneller finden statt alles neu zu starten.",
+      "Für Projekte Infos sammeln und strukturiert ablegen."
+    ]
+  },
+  3: {
+    title:"Wo brauchst du das im echten Leben?",
+    prompt:"Debugging und Hotfix sind geschafft. Welche Alltagssituationen passen dazu?",
+    options:[
+      "Bei Technikproblemen systematisch prüfen statt wild zu klicken.",
+      "Vor dem Teilen von Dateien testen, ob alles wirklich funktioniert.",
+      "Kleine Fehler selbst beheben, bevor Hilfe nötig wird."
+    ]
+  },
+  4: {
+    title:"Wo brauchst du das im echten Leben?",
+    prompt:"Du hast andere unterstützt und Workflows verbessert. Wo nutzt du das real?",
+    options:[
+      "Mitschüler*innen bei digitalen Problemen unterstützen.",
+      "Wiederkehrende Aufgaben mit klaren Kurzbefehlen/Checklisten beschleunigen.",
+      "Bei Gruppenarbeit Zuständigkeiten und Abläufe sauber dokumentieren."
+    ]
+  },
+  5: {
+    title:"Wo brauchst du das im echten Leben?",
+    prompt:"Transfer in Ausbildung/Job: Welche Kompetenz nimmst du direkt mit?",
+    options:[
+      "IT-Tickets verstehen und strukturiert bearbeiten.",
+      "Dateien für verschiedene Auftraggeber korrekt sortieren und versionieren.",
+      "In stressigen Situationen ruhig analysieren und priorisieren."
+    ]
+  }
+};
 
-  window.SCHWARM_DATA = { FS, NPCS, OBJECTIVES };
+
+  window.SCHWARM_DATA = { FS, NPCS, OBJECTIVES, PHASE_REFLECTIONS };
 })();

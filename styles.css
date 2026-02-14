@@ -520,6 +520,54 @@ body{
       resize:vertical;
     }
 
+
+    .reflectionOverlay{
+      position:fixed;
+      inset:0;
+      background:rgba(4,8,14,.82);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:2200;
+      padding:16px;
+    }
+    .reflectionModal{
+      width:min(680px, 100%);
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:linear-gradient(180deg, rgba(15,22,32,.98), rgba(9,14,20,.98));
+      box-shadow: var(--shadow);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .reflectionModal h2{ margin:0; }
+    .reflectionOptions{ display:grid; gap:8px; margin-top:4px; }
+    .reflectionOption{
+      width:100%;
+      text-align:left;
+      justify-content:flex-start;
+      white-space:normal;
+      line-height:1.4;
+    }
+    .reflectionOption.isSelected{
+      border-color: rgba(124,244,176,.75);
+      background: rgba(124,244,176,.2);
+      color: rgba(224,255,238,.95);
+    }
+    .reflectionTakeaway{
+      margin-top:4px;
+      padding:10px;
+      border:1px dashed rgba(124,244,176,.45);
+      border-radius:12px;
+      background: rgba(124,244,176,.08);
+      font-size:12px;
+      line-height:1.45;
+      color: var(--text);
+      white-space:pre-wrap;
+    }
+
     .tutorialOverlay{
       position:fixed;
       inset:0;
