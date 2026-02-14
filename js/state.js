@@ -54,7 +54,7 @@
     superpc: { active:false, returnCwd:"" },
     npcDialog: { active:false, npcId:null, nodeId:null },
     mapVisited: ["/home/player"],
-    clippy: { lastUsedAt: 0 }
+    clippy: { lastUsedAt: 0, usageCount: 0 }
   };
 
   function normalizeState(candidate){
@@ -83,6 +83,7 @@
       s.npcDialog = Object.assign({}, INITIAL_STATE.npcDialog, (s.npcDialog||{}));
       if(!Array.isArray(s.mapVisited)) s.mapVisited = ["/home/player"];
       s.clippy = Object.assign({}, INITIAL_STATE.clippy, (s.clippy||{}));
+      if(!Number.isFinite(Number(s.clippy.usageCount))) s.clippy.usageCount = 0;
       return s;
     }catch(e){
       return structuredClone(INITIAL_STATE);
