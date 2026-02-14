@@ -54,7 +54,18 @@
     superpc: { active:false, returnCwd:"" },
     npcDialog: { active:false, npcId:null, nodeId:null },
     mapVisited: ["/home/player"],
-    clippy: { lastUsedAt: 0, usageCount: 0 }
+    clippy: { lastUsedAt: 0, usageCount: 0 },
+    learningProgress: {
+      xp: 0,
+      badges: [],
+      streak: 0,
+      lastReward: null,
+      milestones: {
+        first_ls:false,
+        first_cd:false,
+        first_grep:false,
+      }
+    }
   };
 
   function normalizeState(candidate){
@@ -84,6 +95,11 @@
       if(!Array.isArray(s.mapVisited)) s.mapVisited = ["/home/player"];
       s.clippy = Object.assign({}, INITIAL_STATE.clippy, (s.clippy||{}));
       if(!Number.isFinite(Number(s.clippy.usageCount))) s.clippy.usageCount = 0;
+      s.learningProgress = Object.assign({}, INITIAL_STATE.learningProgress, (s.learningProgress||{}));
+      s.learningProgress.milestones = Object.assign({}, INITIAL_STATE.learningProgress.milestones, (s.learningProgress.milestones||{}));
+      if(!Array.isArray(s.learningProgress.badges)) s.learningProgress.badges = [];
+      if(!Number.isFinite(Number(s.learningProgress.xp))) s.learningProgress.xp = 0;
+      if(!Number.isFinite(Number(s.learningProgress.streak))) s.learningProgress.streak = 0;
       return s;
     }catch(e){
       return structuredClone(INITIAL_STATE);

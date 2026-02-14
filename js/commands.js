@@ -1088,6 +1088,57 @@ Eingabe: choose <nummer>`;
     renderObjectives();
   }
 
+  function ensureLearningProgress(){
+    const base = {
+      xp: 0,
+      badges: [],
+      streak: 0,
+      lastReward: null,
+      milestones: { first_ls:false, first_cd:false, first_grep:false }
+    };
+    state.learningProgress = Object.assign({}, base, (state.learningProgress||{}));
+    state.learningProgress.milestones = Object.assign({}, base.milestones, (state.learningProgress.milestones||{}));
+    if(!Array.isArray(state.learningProgress.badges)) state.learningProgress.badges = [];
+    if(!Number.isFinite(Number(state.learningProgress.xp))) state.learningProgress.xp = 0;
+    if(!Number.isFinite(Number(state.learningProgress.streak))) state.learningProgress.streak = 0;
+    return state.learningProgress;
+  }
+
+  function grantLearningReward(opts){
+    const cfg = Object.assign({ xp:0, badge:null, reason:"" }, opts||{});
+    const lp = ensureLearningProgress();
+    const xp = Math.max(0, Number(cfg.xp)||0);
+    lp.xp += xp;
+    lp.streak += 1;
+
+    let badgeText = "";
+    if(cfg.badge && !lp.badges.includes(cfg.badge)){
+      lp.badges.push(cfg.badge);
+      badgeText = cfg.badge;
+    }
+
+    lp.lastReward = {
+      xp,
+      badge: badgeText,
+      reason: cfg.reason || "Lernfortschritt",
+      streak: lp.streak,
+      at: Date.now()
+    };
+
+    saveState();
+    try{ if(window.renderLearningProgress) window.renderLearningProgress(); }catch(e){}
+    if(xp > 0) row(`+${xp} XP · ${lp.lastReward.reason}`, "ok");
+    if(badgeText) row(`Badge freigeschaltet: ${badgeText}`, "ok");
+  }
+
+  function countCompletedObjectives(){
+    try{
+      return OBJECTIVES.filter(o=>o.phase===state.phase && o.done(state)).length;
+    }catch(e){
+      return 0;
+    }
+  }
+
   function progressPhaseIfReady(){
     if(state.phase === 1 && state.flags.opened_gate){
       state.phase = 2;
@@ -1825,6 +1876,11 @@ case "man":{
             const n = getNode(p);
             return n?.type==="dir" ? name + "/" : name;
           }).join("  ");
+          const lp = ensureLearningProgress();
+          if(!lp.milestones.first_ls){
+            lp.milestones.first_ls = true;
+            grantLearningReward({ xp:5, badge:"Spurenleser", reason:"Du hast dich mit ls orientiert." });
+          }
           return { ok:true, out, pipeable:true };
         }
         const lines = [];
@@ -1853,6 +1909,11 @@ case "man":{
         const node = getNode(target);
         if(!node || node.type!=="dir") return { ok:false, out:`cd: no such file or directory: ${targetArg}` };
         state.cwd = target;
+        const lp = ensureLearningProgress();
+        if(!lp.milestones.first_cd){
+          lp.milestones.first_cd = true;
+          grantLearningReward({ xp:5, badge:"Navigator", reason:"Du hast dich sicher durch Ordner bewegt." });
+        }
 
         // Phase 5 startet erst beim Betreten des Arbeitsamts.
         if(target === "/arbeitsamt" && state.flags && state.flags.job_arc_unlocked && state.phase < 5){
@@ -3312,6 +3373,11 @@ const outText = (extra + open).trim();
         const matches = grepLines(sourceText, pat, {n:g.n, i:g.i});
         const out = matches.join("\n");
         grepTrigger(pat, out || "");
+        const lp = ensureLearningProgress();
+        if(!lp.milestones.first_grep){
+          lp.milestones.first_grep = true;
+          grantLearningReward({ xp:5, badge:"Musterfinder", reason:"Du hast Informationen gezielt gefiltert." });
+        }
         return { ok:true, out: out || "", pipeable:true };
       }
 
@@ -4085,6 +4151,7 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
       let stdin = null;
       let ok = true;
       for(let j=0;j<segments.length;j++){
+        const doneBefore = countCompletedObjectives();
         const r = cmdImpl(segments[j], stdin);
         if(r.out === "__RESET__"){
           doReset(true);
@@ -4097,6 +4164,14 @@ Wichtig: Nach dem Kopieren → logwipe, sonst bleiben Spuren.` };
           break;
         }
         stdin = r.out ?? "";
+        const doneAfter = countCompletedObjectives();
+        if(doneAfter > doneBefore){
+          const steps = doneAfter - doneBefore;
+          grantLearningReward({
+            xp: steps * 5,
+            reason: `Quest-Teilabschluss (${steps} Schritt${steps>1?"e":""})`
+          });
+        }
         if(j === segments.length - 1){
           if(r.out) row(r.out);
         }

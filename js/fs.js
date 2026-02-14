@@ -659,6 +659,25 @@
     wrap.appendChild(wb);
   }
 
+  function renderLearningProgress(){
+    const wrap = el("learningProgressPanel");
+    if(!wrap) return;
+    const lp = state.learningProgress || { xp:0, badges:[], streak:0, lastReward:null };
+    const last = lp.lastReward || { xp:0, badge:"", streak: lp.streak || 0 };
+    const lastXp = Number(last.xp)||0;
+    const lastBadge = last.badge || "—";
+    const streak = Number(lp.streak)||0;
+
+    wrap.innerHTML = `
+      <div class="learningProgressCompact">
+        <p><strong>${lastXp>0?`+${lastXp}`:"+0"} XP</strong></p>
+        <p>Badge: <strong>${escapeHtml(lastBadge)}</strong></p>
+        <p><strong>${streak}</strong> Schritte in Folge geschafft</p>
+      </div>
+      <p class="small">Belohnungen spiegeln Lernverhalten: Orientierung, sauberes Navigieren, gezielte Suche und Quest-Fortschritt.</p>
+    `;
+  }
+
   
   function renderPhasePill(){
     const pill = document.getElementById("phasePill");

@@ -442,6 +442,7 @@ function boot(){
   renderObjectives();
   renderRewards();
   renderSidequestPanel();
+  renderLearningProgress();
   renderPhasePill();
 
   try{ renderHeaderSub(); }catch(e){}
@@ -837,6 +838,7 @@ function commitUI(opts={}){
   try{ if(o.obj) renderObjectives(); }catch(e){}
   try{ if(o.rewards) renderRewards(); }catch(e){}
   try{ if(o.rewards) renderSidequestPanel(); }catch(e){}
+  try{ if(o.rewards) renderLearningProgress(); }catch(e){}
   try{ syncClippyTooltip(); }catch(e){}
 
   try{
