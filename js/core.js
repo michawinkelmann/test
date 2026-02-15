@@ -1,4 +1,10 @@
 // core.js — DOM helpers, output rendering, shared utilities
+  if(typeof globalThis.structuredClone !== "function"){
+    globalThis.structuredClone = function(value){
+      return JSON.parse(JSON.stringify(value));
+    };
+  }
+
   const el = (id)=>document.getElementById(id);
   const term = el("term");
   const cmdInput = el("cmd");
