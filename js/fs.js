@@ -356,9 +356,9 @@
     iserv: "/school/pcraum",
     keycard: "/school/pcraum",
     gate: "/server_gate",
-    frag1: "/network",
+    frag1: "/patchbay",
     frag2: "/home/player/workbench",
-    frag3: "/network",
+    frag3: "/patchbay",
     locate: "/boss",
     hotfix: "/home/player/workbench",
     report: "/school/sekretariat",
@@ -373,8 +373,25 @@
     jobangebot: "/arbeitsamt"
   };
 
+  function objectiveKeyFromTitle(title){
+    const t = String(title || "").toLowerCase();
+    if(t.includes("tutorial")) return "tutorial";
+    if(t.includes("iserv")) return "iserv";
+    if(t.includes("keycard")) return "keycard";
+    if(t.includes("server-gate")) return "gate";
+    if(t.includes("fragment #1")) return "frag1";
+    if(t.includes("fragment #2")) return "frag2";
+    if(t.includes("fragment #3")) return "frag3";
+    if(t.includes("reality")) return "assemble";
+    if(t.includes("patchlord lokalisieren")) return "locate";
+    if(t.includes("hotfix")) return "hotfix";
+    if(t.includes("zeugnis abholen")) return "report";
+    return "quest";
+  }
+
   function getActiveObjectivePaths(){
     const active = OBJECTIVES.filter((o)=>o.phase===state.phase && !o.done(state));
+    const nextObjective = active[0] || null;
     const out = new Set();
 
     const addPath = (raw)=>{
@@ -384,11 +401,11 @@
       if(getNode(p)?.type === "dir") out.add(p);
     };
 
-    for(const o of active){
-      const maybeKey = String(o.key || "").trim().toLowerCase();
+    if(nextObjective){
+      const maybeKey = String(nextObjective.key || objectiveKeyFromTitle(nextObjective.title)).trim().toLowerCase();
       addPath(QUEST_PATH_BY_KEY[maybeKey]);
 
-      const blob = `${o.title || ""} ${o.hint || ""}`;
+      const blob = `${nextObjective.title || ""} ${nextObjective.hint || ""}`;
       const pathMatches = blob.match(/\/[a-zA-Z0-9_\-/.]+/g) || [];
       for(const m of pathMatches) addPath(m.replace(/[.,;:)!?]+$/g, ""));
     }
@@ -471,6 +488,7 @@
       markVisible(state.cwd);
     }else{
       for(const p of visited) markVisible(p);
+      for(const p of questPaths) markVisible(p);
       markVisible(state.cwd);
     }
 
