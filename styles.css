@@ -60,7 +60,7 @@ body{
       font-size:13px;
       line-height:1.4;
     }
-	    main{
+    main{
 	      width:min(1920px, calc(100vw - 2rem));
 	      margin:16px auto 32px auto;
 	      padding:0 18px;
@@ -70,6 +70,23 @@ body{
 	      align-items:start;
 	      grid-auto-flow:row dense;
 	    }
+    /* Ultra-wide mode: nutzt zusätzliche Fläche, hält Text und Terminal-Zeilen weiterhin gut lesbar. */
+    @media (min-width: 1800px){
+      main{
+        width:min(2280px, calc(100vw - 3rem));
+        grid-template-columns: clamp(360px, 20vw, 500px) minmax(0, 1fr) clamp(360px, 20vw, 500px);
+        gap:clamp(24px, 1.9vw, 40px);
+      }
+      .card h2{ font-size:15px; }
+      .desc{ font-size:15px; }
+      .terminal{
+        font-size:14px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+      }
+      .terminal .row{ width:min(100%, 132ch); }
+    }
     @media (max-width: 1200px){
       main{grid-template-columns:300px minmax(0, 1fr) 300px; }
     }
