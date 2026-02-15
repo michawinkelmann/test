@@ -351,7 +351,86 @@
     return changed;
   }
 
+  const QUEST_PATH_BY_KEY = {
+    tutorial: "/home/player",
+    iserv: "/school/pcraum",
+    keycard: "/school/pcraum",
+    gate: "/server_gate",
+    frag1: "/network",
+    frag2: "/home/player/workbench",
+    frag3: "/network",
+    locate: "/boss",
+    hotfix: "/home/player/workbench",
+    report: "/school/sekretariat",
+    lagfix: "/mentor_hub",
+    arbeitsamt: "/arbeitsamt",
+    beamter: "/arbeitsamt",
+    snackmaster: "/real_life/snackmaster",
+    ars: "/real_life/ars_recycling",
+    ohlendorf: "/real_life/ohlendorf_technik",
+    berndt: "/real_life/berndt_moebel",
+    cms: "/real_life/cms",
+    jobangebot: "/arbeitsamt"
+  };
+
+  function getActiveObjectivePaths(){
+    const active = OBJECTIVES.filter((o)=>o.phase===state.phase && !o.done(state));
+    const out = new Set();
+
+    const addPath = (raw)=>{
+      if(!raw) return;
+      let p = normPath(raw);
+      if(!getNode(p) && getNode(parentDir(p))) p = parentDir(p);
+      if(getNode(p)?.type === "dir") out.add(p);
+    };
+
+    for(const o of active){
+      const maybeKey = String(o.key || "").trim().toLowerCase();
+      addPath(QUEST_PATH_BY_KEY[maybeKey]);
+
+      const blob = `${o.title || ""} ${o.hint || ""}`;
+      const pathMatches = blob.match(/\/[a-zA-Z0-9_\-/.]+/g) || [];
+      for(const m of pathMatches) addPath(m.replace(/[.,;:)!?]+$/g, ""));
+    }
+
+    return out;
+  }
+
+  function ensureMapControls(){
+    const panel = el("mapPanel");
+    if(!panel || panel.dataset.mapBound === "1") return;
+
+    panel.addEventListener("change", (ev)=>{
+      const t = ev.target;
+      if(!(t instanceof HTMLInputElement)) return;
+      if(t.name !== "mapFilter") return;
+      const next = String(t.value || "all");
+      if(!["active","all","unvisited"].includes(next)) return;
+      state.mapFilter = next;
+      saveState();
+      renderWorldMap();
+    });
+
+    const mapEl = el("mapTree");
+    if(mapEl){
+      mapEl.addEventListener("click", (ev)=>{
+        const node = ev.target;
+        if(!(node instanceof HTMLElement)) return;
+        const path = node.dataset.path;
+        if(!path) return;
+        const input = el("cmd");
+        if(!(input instanceof HTMLInputElement)) return;
+        input.value = `cd ${path}`;
+        input.focus();
+      });
+    }
+
+    panel.dataset.mapBound = "1";
+  }
+
   function renderWorldMap(){
+    ensureMapControls();
+
     const mapEl = el("mapTree");
     if(!mapEl) return;
 
@@ -359,18 +438,18 @@
     if(mapChanged) saveState();
 
     const visited = new Set(state.mapVisited || []);
+    const questPaths = getActiveObjectivePaths();
+    const filter = ["active","all","unvisited"].includes(state.mapFilter) ? state.mapFilter : "all";
     const visible = new Set(["/"]);
 
     const markVisible = (path)=>{
       if(!path || !getNode(path)) return;
       visible.add(path);
-      const par = parentDir(path);
-      if(par && getNode(par)) visible.add(par);
 
-      const parKids = listDir(par || "/") || [];
-      for(const name of parKids){
-        const full = (par === "/" ? "" : par) + "/" + name;
-        if(getNode(full)?.type === "dir") visible.add(full);
+      let p = path;
+      while(p && p !== "/"){
+        p = parentDir(p);
+        if(getNode(p)) visible.add(p);
       }
 
       const kids = listDir(path) || [];
@@ -380,16 +459,30 @@
       }
     };
 
-    for(const p of visited) markVisible(p);
-    markVisible(state.cwd);
+    if(filter === "active"){
+      for(const p of questPaths) markVisible(p);
+      markVisible(state.cwd);
+    }else if(filter === "unvisited"){
+      for(const path of Object.keys(FS)){
+        if(getNode(path)?.type !== "dir") continue;
+        if(visited.has(path)) continue;
+        markVisible(path);
+      }
+      markVisible(state.cwd);
+    }else{
+      for(const p of visited) markVisible(p);
+      markVisible(state.cwd);
+    }
 
     const lines = [];
     const labelFor = (path)=>{
       const isRoot = path === "/" || path === "";
       const name = isRoot ? "Schwarmstedt" : path.split("/").pop();
       const isCurrent = path === state.cwd;
+      const isQuest = questPaths.has(path);
       const wasVisited = visited.has(path);
-      const marker = isCurrent ? "◉" : (wasVisited ? "●" : "○");
+      const isUnvisited = !wasVisited;
+      const marker = isCurrent ? "◉" : (isQuest ? "◆" : (wasVisited ? "●" : "○"));
 
       const allKids = (listDir(path) || []).filter((n)=>{
         const full = (path === "/" ? "" : path) + "/" + n;
@@ -403,7 +496,10 @@
 
       return {
         text: `${marker} ${name}${hasHidden ? " …" : ""}`,
-        isCurrent
+        isCurrent,
+        isQuest,
+        isUnvisited,
+        path
       };
     };
 
@@ -430,14 +526,22 @@
     }
 
     walk("/", "", true);
-    mapEl.innerHTML = lines.map(({ prefix, label })=>{
+    const html = lines.map(({ prefix, label })=>{
       const safePrefix = escapeHtml(prefix);
       const safeLabel = escapeHtml(label.text);
-      if(label.isCurrent){
-        return `${safePrefix}<span class="mapCurrentEntry">${safeLabel}</span>`;
-      }
-      return `${safePrefix}${safeLabel}`;
+      const classes = ["mapNodeEntry"];
+      if(label.isCurrent) classes.push("mapCurrentEntry");
+      else if(label.isQuest) classes.push("mapQuestEntry");
+      else if(label.isUnvisited) classes.push("mapUnvisitedEntry");
+      return `${safePrefix}<span class="${classes.join(" ")}" data-path="${escapeHtml(label.path)}">${safeLabel}</span>`;
     }).join("\n");
+
+    mapEl.innerHTML = html;
+
+    const controls = document.querySelectorAll('input[name="mapFilter"]');
+    controls.forEach((input)=>{
+      if(input instanceof HTMLInputElement) input.checked = input.value === filter;
+    });
   }
   function locationPath(){
     let p = state.cwd;

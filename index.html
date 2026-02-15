@@ -122,6 +122,15 @@
   <section class="card mapCard" id="mapPanel">
     <h2>Ordnerkarte</h2>
     <div class="content" aria-label="Ordnerkarte">
+      <div class="mapTools" role="group" aria-label="Kartenfilter und Legende">
+        <label><input type="radio" name="mapFilter" value="active" /> Nur aktive Quest-Orte</label>
+        <label><input type="radio" name="mapFilter" value="all" checked /> Alle Orte</label>
+        <label><input type="radio" name="mapFilter" value="unvisited" /> Unentdeckt</label>
+        <span class="mapLegendItem"><span class="mapLegendDot mapLegendCurrent">◉</span> Aktueller Ort</span>
+        <span class="mapLegendItem"><span class="mapLegendDot mapLegendVisited">●</span> Bereits besucht</span>
+        <span class="mapLegendItem"><span class="mapLegendDot mapLegendQuest">◆</span> Aktive Quest</span>
+        <span class="mapLegendItem"><span class="mapLegendDot mapLegendUnvisited">○</span> Unentdeckt</span>
+      </div>
       <pre class="mapTree" id="mapTree">Lade Karte…</pre>
     </div>
   </section>
