@@ -102,18 +102,51 @@ function getCurrentMainObjective(){
   return list.find((o)=>!o.done(state)) || null;
 }
 
-const CLIPPY_COOLDOWN_MS = 5 * 60 * 1000;
+const CLIPPY_DIFFICULTY = {
+  1: { label:"Stufe 1", desc:"nur Richtung", usageCost:1, cooldownMs:5 * 60 * 1000 },
+  2: { label:"Stufe 2", desc:"nächster Command", usageCost:2, cooldownMs:8 * 60 * 1000 },
+  3: { label:"Stufe 3", desc:"fast vollständige Lösung", usageCost:3, cooldownMs:12 * 60 * 1000 }
+};
+
+function normalizeClippyTemplate(template){
+  const steps = Array.isArray(template?.steps) ? template.steps : [];
+  const stage1 = template?.stages?.[1] || [steps[0] || 'Orientiere dich an Hinweis + Zielort und prüfe deinen Standort mit <code>pwd</code>.'];
+  const stage2 = template?.stages?.[2] || [steps[1] || steps[0] || 'Nutze den nächsten passenden Einzelbefehl aus dem Quest-Hinweis.'];
+  const stage3 = template?.stages?.[3] || (steps.length ? steps.slice(0, 4) : ['Folge dem Standardablauf: <code>pwd</code> → <code>ls</code> → <code>cat</code> → <code>quests</code>.']);
+  const nextCommand = template?.nextCommand || ((stage2[0]||"").match(/<code>([^<]+)<\/code>/)||[])[1] || "quests";
+  return {
+    subtitle: template?.subtitle || "Hilfestellung zur aktuellen Mainquest.",
+    hint: template?.hint || "Erklärung: Schrittweise vorgehen hilft bei der Fehlersuche.",
+    steps,
+    stages: { 1:stage1, 2:stage2, 3:stage3 },
+    nextCommand
+  };
+}
+
+Object.keys(CLIPPY_SOLUTIONS).forEach((k)=>{
+  CLIPPY_SOLUTIONS[k] = normalizeClippyTemplate(CLIPPY_SOLUTIONS[k]);
+});
 
 function ensureClippyState(){
-  if(!state.clippy || typeof state.clippy !== "object") state.clippy = { lastUsedAt: 0, usageCount: 0 };
+  if(!state.clippy || typeof state.clippy !== "object") state.clippy = { lastUsedAt: 0, usageCount: 0, weightedUsage: 0, difficulty: 1 };
   if(!Number.isFinite(Number(state.clippy.lastUsedAt))) state.clippy.lastUsedAt = 0;
   if(!Number.isFinite(Number(state.clippy.usageCount))) state.clippy.usageCount = 0;
+  if(!Number.isFinite(Number(state.clippy.weightedUsage))) state.clippy.weightedUsage = 0;
+  const d = Number(state.clippy.difficulty);
+  state.clippy.difficulty = CLIPPY_DIFFICULTY[d] ? d : 1;
+}
+
+function getClippyDifficulty(){
+  ensureClippyState();
+  return Number(state.clippy.difficulty) || 1;
 }
 
 function getClippyCooldownRemainingMs(){
   ensureClippyState();
+  const lastDiff = CLIPPY_DIFFICULTY[Number(state.clippy.lastDifficulty)] ? Number(state.clippy.lastDifficulty) : getClippyDifficulty();
+  const cooldown = CLIPPY_DIFFICULTY[lastDiff].cooldownMs;
   const elapsed = Date.now() - Number(state.clippy.lastUsedAt || 0);
-  return Math.max(0, CLIPPY_COOLDOWN_MS - elapsed);
+  return Math.max(0, cooldown - elapsed);
 }
 
 function formatCooldown(ms){
@@ -123,6 +156,29 @@ function formatCooldown(ms){
   return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
 
+function analyzeClippyMistake(key){
+  const recent = Array.isArray(state.lastCmds) ? state.lastCmds.slice(0, 6).map((c)=>String(c||"").trim()).filter(Boolean) : [];
+  const typo = recent.find((c)=>/^(sl|pdw|cta|unlok|ulock)\b/i.test(c));
+  if(typo) return `Typischer Fehler erkannt: Tippfehler im Command <code>${escapeHtml(typo)}</code>.`;
+
+  const wrongPath = recent.find((c)=>/^cd\s+\/(pcraum|Schul-PC|workbench)\b/i.test(c));
+  if(wrongPath) return `Typischer Fehler erkannt: Wahrscheinlich falscher Pfad bei <code>${escapeHtml(wrongPath)}</code>.`;
+
+  const questPatterns = {
+    keycard: /cat\s+keycard\.txt$/i,
+    gate: /unlock\s*$/i,
+    hotfix: /echo\s+.+>>\s*\/boss\//i,
+    chmod: /chmod\s+\+x\s+\/boss\//i
+  };
+  const pattern = questPatterns[key];
+  if(pattern){
+    const found = recent.find((c)=>pattern.test(c));
+    if(found) return `Typischer Fehler erkannt: Quest-spezifischer Stolperstein bei <code>${escapeHtml(found)}</code>.`;
+  }
+
+  return "Typischer Fehler erkannt: Kein klarer Fehler im Verlauf — vermutlich fehlt ein Zwischenschritt.";
+}
+
 function renderClippyAvailability(){
   const btn = el("clippyHelperBtn");
   const status = el("clippyStatus");
@@ -130,7 +186,9 @@ function renderClippyAvailability(){
   if(!btn || !status) return;
 
   ensureClippyState();
-  if(usage) usage.textContent = `Nutzungen: ${Math.max(0, Number(state.clippy.usageCount)||0)}`;
+  const difficulty = getClippyDifficulty();
+  const diffCfg = CLIPPY_DIFFICULTY[difficulty];
+  if(usage) usage.textContent = `Nutzungen: ${Math.max(0, Number(state.clippy.usageCount)||0)} · Hilfe-Punkte: ${Math.max(0, Number(state.clippy.weightedUsage)||0)} · ${diffCfg.label} (${diffCfg.desc})`;
 
   const remaining = getClippyCooldownRemainingMs();
   const hasObjective = !!getCurrentMainObjective();
@@ -150,14 +208,14 @@ function renderClippyAvailability(){
   if(isCooldown){
     btn.disabled = true;
     btn.textContent = `📎 Clippy Cooldown (${formatCooldown(remaining)})`;
-    status.textContent = `Status: Cooldown aktiv · Restzeit ${formatCooldown(remaining)}`;
+    status.textContent = `Status: ${diffCfg.label} aktiv · Restzeit ${formatCooldown(remaining)}`;
     status.classList.add("isCooldown");
     return;
   }
 
   btn.disabled = false;
-  btn.textContent = "📎 Clippy Helfer";
-  status.textContent = "Status: bereit";
+  btn.textContent = `📎 Clippy Helfer (${diffCfg.label})`;
+  status.textContent = `Status: bereit · ${diffCfg.desc}`;
   status.classList.add("isReady");
 }
 
@@ -165,7 +223,7 @@ function buildClippyContent(){
   const current = getCurrentMainObjective();
   if(!current) return null;
   const key = current.key || objectiveKeyFromTitle(current.title);
-  const template = CLIPPY_SOLUTIONS[key] || {
+  const baseTemplate = CLIPPY_SOLUTIONS[key] || normalizeClippyTemplate({
     subtitle:"Für diese Quest gibt es aktuell eine allgemeine Musterstrategie.",
     steps:[
       'Lies zuerst den Quest-Hinweis komplett und markiere das Zielverb (z.B. finden, lesen, kopieren, ausführen).',
@@ -174,8 +232,16 @@ function buildClippyContent(){
       'Nach jedem Schritt sofort mit <code>quests</code> kontrollieren, ob die Quest bereits als erledigt markiert wurde.'
     ],
     hint:'Erklärung: Die meisten Mainquests folgen demselben Lernmuster aus Navigation, Analyse und sauberer Ausführung.'
-  };
-  return { key, objective: current, template };
+  });
+  const difficulty = getClippyDifficulty();
+  const stageSteps = baseTemplate.stages[difficulty] || baseTemplate.stages[1];
+  const detectedMistake = analyzeClippyMistake(key);
+  const nextStep = difficulty === 1
+    ? `Nächster sinnvoller Schritt: Gehe Richtung Quest-Ziel und verifiziere dann mit <code>quests</code>.`
+    : difficulty === 2
+      ? `Nächster sinnvoller Schritt: Nutze als nächstes <code>${escapeHtml(baseTemplate.nextCommand)}</code>.`
+      : `Nächster sinnvoller Schritt: Arbeite die folgenden Teilschritte der Reihe nach ab.`;
+  return { key, objective: current, template: baseTemplate, difficulty, stageSteps, detectedMistake, nextStep };
 }
 
 function getOpenClippyObjectiveKey(){
@@ -227,11 +293,19 @@ function showClippyTooltip(){
     closeClippyTooltip();
     return;
   }
-  const { key, objective, template } = payload;
-  const stepsHtml = template.steps.map((step)=>`<li>${step}</li>`).join("");
+  const { key, objective, template, difficulty, stageSteps, detectedMistake, nextStep } = payload;
+  const stepsHtml = stageSteps.map((step)=>`<li>${step}</li>`).join("");
+  const diffButtons = [1,2,3].map((lvl)=>{
+    const cfg = CLIPPY_DIFFICULTY[lvl];
+    const active = lvl === difficulty ? "isActive" : "";
+    return `<button class="btn ${active}" type="button" data-clippy-diff="${lvl}">${cfg.label}</button>`;
+  }).join("");
   tooltip.innerHTML = `
-    <h3 class="clippyTitle">📎 Clippy Helfer: Musterlösung für [${escapeHtml(key)}]</h3>
+    <h3 class="clippyTitle">📎 Clippy Helfer: [${escapeHtml(key)}] · ${escapeHtml(CLIPPY_DIFFICULTY[difficulty].label)}</h3>
     <p class="clippySub"><strong>${escapeHtml(objective.title)}</strong><br>${escapeHtml(template.subtitle)}</p>
+    <div class="clippyActions">${diffButtons}</div>
+    <p class="clippyHint"><strong>${detectedMistake}</strong></p>
+    <p class="clippyHint"><strong>${nextStep}</strong></p>
     <ol class="clippySteps">${stepsHtml}</ol>
     <p class="clippyHint">${escapeHtml(template.hint)}</p>
     <div class="clippyActions"><button class="btn" id="clippyCloseBtn" type="button">Okay</button></div>
@@ -242,13 +316,27 @@ function showClippyTooltip(){
   btn.setAttribute("aria-expanded", "true");
 
   ensureClippyState();
+  const cfg = CLIPPY_DIFFICULTY[difficulty];
   state.clippy.lastUsedAt = Date.now();
+  state.clippy.lastDifficulty = difficulty;
   state.clippy.usageCount = Math.max(0, Number(state.clippy.usageCount)||0) + 1;
+  state.clippy.weightedUsage = Math.max(0, Number(state.clippy.weightedUsage)||0) + Number(cfg.usageCost || 1);
   saveState();
   renderClippyAvailability();
 
   const closeBtn = el("clippyCloseBtn");
   if(closeBtn) closeBtn.addEventListener("click", closeClippyTooltip);
+  tooltip.querySelectorAll("[data-clippy-diff]").forEach((node)=>{
+    node.addEventListener("click", ()=>{
+      const lvl = Number(node.getAttribute("data-clippy-diff"));
+      if(!CLIPPY_DIFFICULTY[lvl]) return;
+      state.clippy.difficulty = lvl;
+      saveState();
+      closeClippyTooltip();
+      renderClippyAvailability();
+      showClippyTooltip();
+    });
+  });
   requestAnimationFrame(positionClippyTooltip);
 }
 
