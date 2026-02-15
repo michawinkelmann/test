@@ -26,11 +26,11 @@ body{
     html, body{
       overflow-y:auto;
     }
-    header{
-      padding:18px 18px 0 18px;
-      max-width:1380px;
-      margin:0 auto;
-    }
+	    header{
+	      width:min(1920px, calc(100vw - 2rem));
+	      padding:18px 18px 0 18px;
+	      margin:0 auto;
+	    }
     .brand{
       display:flex;
       align-items:baseline;
@@ -60,16 +60,16 @@ body{
       font-size:13px;
       line-height:1.4;
     }
-    main{
-      max-width:1380px;
-      margin:16px auto 32px auto;
-      padding:0 18px;
-      display:grid;
-      grid-template-columns: 320px minmax(0, 1fr) 320px;
-      gap:16px;
-      align-items:start;
-      grid-auto-flow:row dense;
-    }
+	    main{
+	      width:min(1920px, calc(100vw - 2rem));
+	      margin:16px auto 32px auto;
+	      padding:0 18px;
+	      display:grid;
+	      grid-template-columns: clamp(320px, 22vw, 420px) minmax(0, 1fr) clamp(320px, 22vw, 420px);
+	      gap:clamp(16px, 1.6vw, 28px);
+	      align-items:start;
+	      grid-auto-flow:row dense;
+	    }
     @media (max-width: 1200px){
       main{grid-template-columns:300px minmax(0, 1fr) 300px; }
     }
