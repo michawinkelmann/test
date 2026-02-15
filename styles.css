@@ -320,7 +320,29 @@ body{
     .mapCard .content{
       height: var(--top-card-height);
       display:flex;
+      flex-direction:column;
+      gap:8px;
     }
+    .mapTools{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:8px 12px;
+      font-size:11px;
+      color:var(--muted);
+    }
+    .mapTools label{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      cursor:pointer;
+    }
+    .mapLegendItem{ display:inline-flex; align-items:center; gap:3px; }
+    .mapLegendDot{ font-family:var(--mono); }
+    .mapLegendCurrent{ color:#b8ffd6; }
+    .mapLegendVisited{ color:#9fb0c5; }
+    .mapLegendQuest{ color:#ffd77f; }
+    .mapLegendUnvisited{ color:#7f8ca3; }
     .mapTree{
       margin:0;
       width:100%;
@@ -329,13 +351,15 @@ body{
       font-family:var(--mono);
       font-size:12px;
       line-height:1.45;
-      white-space:pre;
+      white-space:pre-wrap;
       overflow:auto;
       flex:1 1 auto;
       border:1px solid var(--line);
       border-radius:12px;
       background: rgba(0,0,0,.26);
     }
+    .mapNodeEntry{ cursor:pointer; border-radius:4px; }
+    .mapNodeEntry:hover{ background:rgba(91,156,255,.14); }
     .mapCurrentEntry{
       color:#b8ffd6;
       text-shadow:
@@ -344,6 +368,8 @@ body{
         0 0 18px rgba(124,244,176,.35);
       font-weight:700;
     }
+    .mapQuestEntry{ color:#ffd77f; font-weight:600; }
+    .mapUnvisitedEntry{ color:#7f8ca3; }
     @media (max-width: 1020px){
       .terminalWrap{height:auto;}
       .mapCard .content{height:auto;}
