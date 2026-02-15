@@ -375,6 +375,7 @@
 
   function getActiveObjectivePaths(){
     const active = OBJECTIVES.filter((o)=>o.phase===state.phase && !o.done(state));
+    const nextObjective = active[0];
     const out = new Set();
 
     const addPath = (raw)=>{
@@ -384,7 +385,8 @@
       if(getNode(p)?.type === "dir") out.add(p);
     };
 
-    for(const o of active){
+    if(nextObjective){
+      const o = nextObjective;
       const maybeKey = String(o.key || "").trim().toLowerCase();
       addPath(QUEST_PATH_BY_KEY[maybeKey]);
 
