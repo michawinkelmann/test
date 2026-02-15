@@ -373,24 +373,59 @@
     jobangebot: "/arbeitsamt"
   };
 
+  function inferObjectiveKey(objective){
+    const raw = String(objective?.key || "").trim().toLowerCase();
+    if(raw) return raw;
+
+    const title = String(objective?.title || "").toLowerCase();
+    if(title.includes("tutorial")) return "tutorial";
+    if(title.includes("i-serv") || title.includes("iserv")) return "iserv";
+    if(title.includes("keycard")) return "keycard";
+    if(title.includes("server-gate")) return "gate";
+    if(title.includes("fragment #1")) return "frag1";
+    if(title.includes("fragment #2")) return "frag2";
+    if(title.includes("fragment #3")) return "frag3";
+    if(title.includes("patchlord") || title.includes("bug-zeile")) return "locate";
+    if(title.includes("hotfix") || title.includes("ausf\u00fchrbar") || title.includes("bossfight")) return "hotfix";
+    if(title.includes("zeugnis abholen")) return "report";
+    if(title.includes("noah") || title.includes("emma") || title.includes("leo") || title.includes("mentor-run")) return "lagfix";
+    return "";
+  }
+
+  function objectivePathCandidates(objective){
+    const out = [];
+    const seen = new Set();
+    const add = (raw)=>{
+      if(!raw) return;
+      let p = normPath(raw);
+      if(!getNode(p) && getNode(parentDir(p))) p = parentDir(p);
+      if(getNode(p)?.type !== "dir") return;
+      if(seen.has(p)) return;
+      seen.add(p);
+      out.push(p);
+    };
+
+    const inferredKey = inferObjectiveKey(objective);
+    add(QUEST_PATH_BY_KEY[inferredKey]);
+
+    const blob = `${objective?.title || ""} ${objective?.hint || ""}`;
+    const pathMatches = blob.match(/\/[a-zA-Z0-9_\-/.]+/g) || [];
+    for(const m of pathMatches) add(m.replace(/[.,;:)!?]+$/g, ""));
+    return out;
+  }
+
   function getActiveObjectivePaths(){
     const active = OBJECTIVES.filter((o)=>o.phase===state.phase && !o.done(state));
     const out = new Set();
 
-    const addPath = (raw)=>{
-      if(!raw) return;
-      let p = normPath(raw);
-      if(!getNode(p) && getNode(parentDir(p))) p = parentDir(p);
-      if(getNode(p)?.type === "dir") out.add(p);
-    };
-
+    // Nur die chronologisch nächste offene Quest markieren.
+    // Falls diese Quest keinen eindeutigen Ort enthält, wird auf die nächste offene Quest
+    // mit auflösbarem Ort gefallen.
     for(const o of active){
-      const maybeKey = String(o.key || "").trim().toLowerCase();
-      addPath(QUEST_PATH_BY_KEY[maybeKey]);
-
-      const blob = `${o.title || ""} ${o.hint || ""}`;
-      const pathMatches = blob.match(/\/[a-zA-Z0-9_\-/.]+/g) || [];
-      for(const m of pathMatches) addPath(m.replace(/[.,;:)!?]+$/g, ""));
+      const candidates = objectivePathCandidates(o);
+      if(!candidates.length) continue;
+      out.add(candidates[0]);
+      break;
     }
 
     return out;
