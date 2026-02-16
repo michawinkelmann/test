@@ -636,9 +636,12 @@
       if(nextObjective){
         const key = escapeHtml(nextObjective.key || "quest");
         const titleText = escapeHtml(nextObjective.title || "Nächstes Ziel");
+        const shortDescription = escapeHtml(nextObjective.hint || "Kurzbeschreibung folgt im Ziele-Bereich.");
         nextQuestHint.innerHTML = `
           <strong>Nächstes Quest-Ziel:</strong>
           <a href="#objectivesPanel">[${key}] ${titleText}</a><br>
+          <span>${shortDescription}</span><br>
+          <span>Mehr Hilfe: <span class="kbd">help - ${key}</span></span><br>
           <span>Weitere Quests findest du weiter unten im Bereich <strong>Ziele</strong>.</span>
         `;
       }else{
