@@ -613,5 +613,16 @@ body{
       box-shadow:0 12px 26px rgba(0,0,0,.4);
     }
     .tutorialBubble p{ margin:0 0 10px 0; font-size:13px; line-height:1.45; }
+    .tutorialCommand{
+      display:inline-block;
+      font-family:var(--mono);
+      font-weight:700;
+      color:#b6ffd1;
+      background:rgba(124,244,176,.14);
+      border:1px solid rgba(124,244,176,.45);
+      border-radius:6px;
+      padding:1px 6px;
+      letter-spacing:.01em;
+    }
     .tutorialFocus{ position:relative; z-index:1550; box-shadow:0 0 0 2px rgba(124,244,176,.6), 0 0 0 9999px rgba(5,8,14,.58); }
     .tutorialInputFocus{ box-shadow:0 0 0 2px rgba(124,244,176,.75); border-radius:12px; }
