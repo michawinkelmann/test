@@ -320,6 +320,18 @@ body{
     .clippySub{ margin:0 0 10px 0; color:var(--muted); font-size:12px; line-height:1.4; }
     .clippySteps{ margin:0; padding-left:18px; font-size:12px; line-height:1.45; }
     .clippySteps li{ margin-bottom:8px; }
+    .clippySteps code,
+    .clippyHint code{
+      display:inline-block;
+      font-family:var(--mono);
+      font-weight:700;
+      color:#b6ffd1;
+      background:rgba(124,244,176,.14);
+      border:1px solid rgba(124,244,176,.45);
+      border-radius:6px;
+      padding:1px 6px;
+      letter-spacing:.01em;
+    }
     .clippyHint{ margin:8px 0 0 0; color:var(--muted); font-size:12px; }
     .clippyActions{ margin-top:12px; display:flex; justify-content:flex-end; }
 
