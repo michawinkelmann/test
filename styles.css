@@ -246,7 +246,12 @@ body{
     .terminalWrap{
       display:flex;
       flex-direction:column;
-      height: var(--top-card-height);
+      /*
+        Der Terminal-Header ist durch Clippy etwas höher geworden als die
+        Header der Nachbar-Panels. Deshalb kompensieren wir im Content-Bereich,
+        damit die Gesamthöhe wieder bündig mit den anderen Top-Panels bleibt.
+      */
+      height: calc(var(--top-card-height) - 18px);
     }
 
     .storyCard{
