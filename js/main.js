@@ -548,11 +548,15 @@ function boot(){
 
   const ps = document.getElementById("printStatus");
   if(ps){
-    if(state.flags && state.flags.system_fixed){
+    if(Number(state.phase) >= 5){
+      ps.hidden = true;
+    }else if(state.flags && state.flags.system_fixed){
+      ps.hidden = false;
       ps.textContent = "✅ Druckdienste online — Zeugnisse verfügbar.";
       ps.classList.remove("warnInline");
       ps.classList.add("okInline");
     } else {
+      ps.hidden = false;
       ps.textContent = "⚠️ Wegen eines System-Glitches können aktuell keine Zeugnisse gedruckt werden.";
       ps.classList.remove("okInline");
       ps.classList.add("warnInline");
@@ -944,22 +948,19 @@ function commitUI(opts={}){
 }
 
 function renderHeaderSub(){
-  const elSub = document.getElementById("headerSub");
   const phaseInline = document.getElementById("phaseStatusInline");
-  if(!elSub) return;
-  if(!elSub.dataset.defaultHtml){
-    elSub.dataset.defaultHtml = elSub.innerHTML;
-  }
+  const ps = document.getElementById("printStatus");
 
   if(Number(state.phase) >= 5){
     const phaseText = "Schule fertig. Ab zur Arbeit: regel dein eigenes Leben — und guck mal, ob dir Schule überhaupt was gebracht hat. 😎";
     if(phaseInline) phaseInline.textContent = phaseText;
-    elSub.innerHTML = "Tipp: <span class=\"kbd\">help</span> · <span class=\"kbd\">quests</span>";
+    if(ps) ps.hidden = true;
   }else{
     if(phaseInline) phaseInline.textContent = "";
-    elSub.innerHTML = elSub.dataset.defaultHtml;
+    if(ps) ps.hidden = false;
   }
 }
+
 
 function setPhase(n){
   state.phase = Math.max(1, Math.min(99, Number(n)||1));

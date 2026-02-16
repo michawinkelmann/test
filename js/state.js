@@ -110,11 +110,15 @@
     try{
       const ps = document.getElementById("printStatus");
       if(ps){
-        if(state.flags && state.flags.system_fixed){
+        if(Number(state.phase) >= 5){
+          ps.hidden = true;
+        }else if(state.flags && state.flags.system_fixed){
+          ps.hidden = false;
           ps.textContent = "✅ Druckdienste online — Zeugnisse verfügbar.";
           ps.classList.remove("warnInline");
           ps.classList.add("okInline");
         } else {
+          ps.hidden = false;
           ps.textContent = "⚠️ Wegen eines System-Glitches können aktuell keine Zeugnisse gedruckt werden.";
           ps.classList.remove("okInline");
           ps.classList.add("warnInline");
