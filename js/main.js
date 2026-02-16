@@ -37,6 +37,8 @@ const TUTORIAL_TASKS = [
 ];
 
 const CINEMATIC_INTRO_LINES = [
+  "Du bist Schüler*in der KGS Wilhelm‑Röpke‑Schule Schwarmstedt — und irgendwer hat eure Schule in einen Gaming‑Layer geglitcht.",
+  "Du escapst nur, wenn du Bash drauf hast. No cap. 😌",
   "IServ-Mirror meldet unautorisierte Schreibzugriffe auf die Schul-Instanz.",
   "Der Gaming-Layer synchronisiert sich mit dem KGS-Netz — Realität und Simulation kollidieren.",
   "Nur ein sauberer Terminal-Lauf kann den Patchlord stoppen."
@@ -943,17 +945,18 @@ function commitUI(opts={}){
 
 function renderHeaderSub(){
   const elSub = document.getElementById("headerSub");
+  const phaseInline = document.getElementById("phaseStatusInline");
   if(!elSub) return;
   if(!elSub.dataset.defaultHtml){
     elSub.dataset.defaultHtml = elSub.innerHTML;
   }
 
   if(Number(state.phase) >= 5){
-    elSub.innerHTML = [
-      "Schule fertig. Ab zur Arbeit: regel dein eigenes Leben — und guck mal, ob dir Schule überhaupt was gebracht hat. 😎 ",
-      "Tipp: <span class=\"kbd\">help</span> · <span class=\"kbd\">quests</span>"
-    ].join("");
+    const phaseText = "Schule fertig. Ab zur Arbeit: regel dein eigenes Leben — und guck mal, ob dir Schule überhaupt was gebracht hat. 😎";
+    if(phaseInline) phaseInline.textContent = phaseText;
+    elSub.innerHTML = "Tipp: <span class=\"kbd\">help</span> · <span class=\"kbd\">quests</span>";
   }else{
+    if(phaseInline) phaseInline.textContent = "";
     elSub.innerHTML = elSub.dataset.defaultHtml;
   }
 }

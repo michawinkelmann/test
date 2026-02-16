@@ -46,6 +46,12 @@ body{
       display:flex;
       align-items:center;
       gap:10px;
+      flex-wrap:wrap;
+    }
+    .titleHint{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
     }
     .pill{
       font-size:12px;
