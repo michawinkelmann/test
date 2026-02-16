@@ -167,12 +167,15 @@ body{
     }
     .phaseCommandsHint{ margin-top:8px; }
     .nextQuestHint{
-      margin-top:10px;
-      padding-top:10px;
-      border-top:1px dashed rgba(255,255,255,.14);
+      margin-top:12px;
+      padding:10px 12px;
+      border:1px solid rgba(255,215,127,.45);
+      border-radius:10px;
+      background: linear-gradient(135deg, rgba(255,215,127,.16), rgba(255,215,127,.06));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.07), 0 8px 18px rgba(0,0,0,.2);
       font-size:12px;
       line-height:1.45;
-      color:var(--muted);
+      color:#ffe7b2;
     }
     .nextQuestHint a{
       color:var(--accent);
