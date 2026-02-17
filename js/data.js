@@ -1498,20 +1498,20 @@ Known issue:
 `Klassenraum 7H1 (Hauptschule)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Manchmal springt links oben "XP +0" auf, obwohl niemand irgendwas gemacht hat.
+Bitte nicht kommentieren, ruhig weiterarbeiten.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Bruchrechnen: Zähler/Nenner sauber kürzen
+- Merksatz: "Erst Klammern, dann Party"
+- Hausaufgabe S. 47 Nr. 2a–f
 `},
 
     "/school/klassenraume/7H1/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (7H1):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Englisch
+- 1. Stunde: Mathe (Brüche battlen, no mercy)
+- 2. Stunde: Deutsch (Vorlesen any%, alle nicken professionell)
+- 3. Stunde: Englisch ("present progressive" macht Faxen)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/klassenraume/7H2": { type:"dir", children:["tafel.txt","stundenplan.txt"] },
@@ -1520,20 +1520,20 @@ Hinweis: Wenn du mit Leuten redest: talk <id>
 `Klassenraum 7H2 (Hauptschule)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Der rechte Rand zeigt manchmal kurz "Connection unstable".
+Die Klasse nennt es "Tafel-Lag" und arbeitet einfach weiter.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Satzglieder bestimmen (Subjekt/Prädikat/Objekt)
+- 5-Minuten-Wortschatzquiz nach der Pause
+- Merkhilfe: "Wer tut was?" zuerst fragen
 `},
 
     "/school/klassenraume/7H2/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (7H2):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Informatik
+- 1. Stunde: NaWi (Experiment: Warum schäumt das so doll?!)
+- 2. Stunde: Deutsch (Satzbau, aber mit maximal Drama)
+- 3. Stunde: Informatik (Passwort nicht "1234", bitte danke)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/klassenraume/8G1": { type:"dir", children:["tafel.txt","stundenplan.txt"] },
@@ -1542,20 +1542,20 @@ Hinweis: Wenn du mit Leuten redest: talk <id>
 `Klassenraum 8G1 (Gymnasium)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Bei längeren Formeln erscheinen sporadisch Pixel-Artefakte.
+Die Tafel bleibt benutzbar; bitte nicht auf das Summen achten.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Englisch: if-clauses Typ I/II
+- Vokabeltest am Freitag angekündigt
+- Reminder: irregular verbs sind kein optionales DLC
 `},
 
     "/school/klassenraume/8G1/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (8G1):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Sport
+- 1. Stunde: Englisch (Grammar grindset aktiviert)
+- 2. Stunde: Mathe (lineare Funktionen, wir sliden durch)
+- 3. Stunde: Sport (Cooper-Test, rip Ausdauer)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/klassenraume/8G2": { type:"dir", children:["tafel.txt","stundenplan.txt"] },
@@ -1564,20 +1564,20 @@ Hinweis: Wenn du mit Leuten redest: talk <id>
 `Klassenraum 8G2 (Gymnasium)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Oben rechts blinkt unregelmäßig "Autosave…" ohne erkennbaren Grund.
+Unterricht findet dennoch planmäßig statt.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Biologie: Zellorganellen und ihre Funktionen
+- Skizze: Tierzelle vs. Pflanzenzelle
+- Hausaufgabe: Lernkarteikarten vorbereiten
 `},
 
     "/school/klassenraume/8G2/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (8G2):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Bio
+- 1. Stunde: Bio (Zelle auf entspannt sezieren, nur theoretisch)
+- 2. Stunde: Kunst (Perspektive so: Auge kneift, Lineal weint)
+- 3. Stunde: Englisch (Listening, bitte nicht wegpennen)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/klassenraume/8G3": { type:"dir", children:["tafel.txt","stundenplan.txt"] },
@@ -1586,20 +1586,20 @@ Hinweis: Wenn du mit Leuten redest: talk <id>
 `Klassenraum 8G3 (Gymnasium)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Während Kartenarbeit poppt kurz "Map data loading" auf.
+Didaktisch nicht relevant, aber auffällig.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Erdkunde: Klimazonen der Erde
+- Atlasarbeit: Breiten- und Längengrade
+- Kurzabfrage in Stunde 2 möglich
 `},
 
     "/school/klassenraume/8G3/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (8G3):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Informatik
+- 1. Stunde: Erdkunde (Klimazonen-Speedrun)
+- 2. Stunde: Deutsch (Gedichtanalyse, alle so "hm deep")
+- 3. Stunde: Informatik (Scratch-Projekt mit Bossmusik)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/klassenraume/9R1": { type:"dir", children:["tafel.txt","stundenplan.txt"] },
@@ -1608,20 +1608,20 @@ Hinweis: Wenn du mit Leuten redest: talk <id>
 `Klassenraum 9R1 (Realschule)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Bei Textaufgaben erscheint manchmal "Hint available" für 0,2 Sekunden.
+Bitte ignorieren und Rechenweg vollständig notieren.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Mathe: lineare Gleichungssysteme (Additionsverfahren)
+- Tipp: Probe immer am Ende machen
+- Hausaufgabe Nr. 5, 7 und 9
 `},
 
     "/school/klassenraume/9R1/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (9R1):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Bio
+- 1. Stunde: Mathe (x und y klären heute Beef)
+- 2. Stunde: WiPo (Diskussion eskaliert höflich)
+- 3. Stunde: Bio (Genetik light, aber Gehirn glüht)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/klassenraume/9R2": { type:"dir", children:["tafel.txt","stundenplan.txt"] },
@@ -1630,20 +1630,20 @@ Hinweis: Wenn du mit Leuten redest: talk <id>
 `Klassenraum 9R2 (Realschule)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Die Uhrzeit auf der Tafel springt gelegentlich drei Minuten zurück.
+Unterrichtsablauf bleibt unverändert; Panik ist nicht vorgesehen.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Deutsch: Erörterung aufbauen (These/Argument/Beleg)
+- Formulierungshilfen an der Seite
+- Abgabe der Rohfassung bis Donnerstag
 `},
 
     "/school/klassenraume/9R2/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (9R2):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Erdkunde
+- 1. Stunde: Deutsch (Erörterung, aber in korrekt)
+- 2. Stunde: Mathe (Prozentrechnung, Konto sagt aua)
+- 3. Stunde: Erdkunde (Stadt-Land-Flow, urban vibes)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/klassenraume/10G1": { type:"dir", children:["tafel.txt","stundenplan.txt"] },
@@ -1652,20 +1652,20 @@ Hinweis: Wenn du mit Leuten redest: talk <id>
 `Klassenraum 10G1 (Gymnasium)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Chemische Formeln werden vereinzelt doppelt gerendert (Ghost-Schrift).
+Bitte nur die obere Zeile abschreiben.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Chemie: Reaktionsgleichungen ausgleichen
+- Redox-Basics zur Wiederholung
+- Sicherheit: Schutzbrille bleibt Pflicht
 `},
 
     "/school/klassenraume/10G1/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (10G1):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Geschichte
+- 1. Stunde: Chemie (Redox reißt komplett rein)
+- 2. Stunde: Geschichte (Industrialisierung, Lore ohne Ende)
+- 3. Stunde: Mathe (Analysis teaser, alle nervös)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/klassenraume/10R1": { type:"dir", children:["tafel.txt","stundenplan.txt"] },
@@ -1674,20 +1674,20 @@ Hinweis: Wenn du mit Leuten redest: talk <id>
 `Klassenraum 10R1 (Realschule)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Nach dem Gong erscheint kurz "Checkpoint erreicht".
+Bitte davon nicht ablenken lassen.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Sporttheorie: Trainingsprinzipien (Belastung/Erholung)
+- Pulsbereiche ausrechnen
+- Praxis in Halle: Staffelvarianten
 `},
 
     "/school/klassenraume/10R1/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (10R1):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Geschichte
+- 1. Stunde: Sporttheorie (Puls hoch, Motivation höher?)
+- 2. Stunde: Mathe (Bewerbungsrechnung aka Realität klopft)
+- 3. Stunde: Geschichte (Kalter Krieg, very frostig)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/klassenraume/10H1": { type:"dir", children:["tafel.txt","stundenplan.txt"] },
@@ -1696,20 +1696,20 @@ Hinweis: Wenn du mit Leuten redest: talk <id>
 `Klassenraum 10H1 (Hauptschule)
 
 ⚠️ GLITCH-INFO:
-Manchmal flackert die Tafel kurz wie ein HUD.
-Alle tun so, als wäre das normal. Sus.
+Im unteren Bereich laufen sporadisch "Systemhinweise" durch.
+Keine Funktionseinschränkung, Unterricht normal fortsetzen.
 
-Vibe:
-- Stühle: quietschen
-- Beamer: lebt sein eigenes Leben
-- Kreide: lowkey OP
+Heutiges Tafelbild:
+- Biologie: Ökosystem Wald (Nahrungskette)
+- Zeichnung: Produzent → Konsument → Destruent
+- Kurztest nächste Woche angekündigt
 `},
 
     "/school/klassenraume/10H1/stundenplan.txt": { type:"file", content:
 `Stundenplan-Schnipsel (10H1):
-- 1. Stunde: Mathe oder so
-- 2. Stunde: Deutsch (jemand liest, alle tun so als würden sie zuhören)
-- 3. Stunde: Geschichte
+- 1. Stunde: Bio (Wald-Öko, wer frisst wen?)
+- 2. Stunde: Deutsch (Bewerbungsschreiben, erwachsen werden speedrun)
+- 3. Stunde: Praxislernen (hands-on, no cap)
 Hinweis: Wenn du mit Leuten redest: talk <id>
 `},
     "/school/keller": { type:"dir", children:["winkelmann_lab"] },
