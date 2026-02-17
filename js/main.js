@@ -856,14 +856,31 @@ cmdInput.addEventListener("keydown", (e)=>{
     return;
   }
   if(e.key === "Tab"){
+    cmdInput._tabState = cmdInput._tabState || { source:"", index:-1, candidates:[], kind:"", activePrefix:"" };
+    const tabState = cmdInput._tabState;
+
+    const canContinueCycle = tabState.candidates.length > 1 && (
+      (tabState.kind === "path" && tabState.candidates.some((candidate)=>`${tabState.activePrefix}${candidate}` === cmdInput.value)) ||
+      (tabState.kind !== "path" && tabState.candidates.includes(cmdInput.value))
+    );
+
+    if(canContinueCycle){
+      tabState.index = (tabState.index + 1) % tabState.candidates.length;
+      if(tabState.kind === "path"){
+        cmdInput.value = `${tabState.activePrefix}${tabState.candidates[tabState.index]}`;
+      }else{
+        cmdInput.value = tabState.candidates[tabState.index];
+      }
+      e.preventDefault();
+      return;
+    }
+
     const auto = autocomplete(cmdInput.value);
     if(!auto){
       e.preventDefault();
       return;
     }
 
-    cmdInput._tabState = cmdInput._tabState || { source:"", index:-1, candidates:[] };
-    const tabState = cmdInput._tabState;
     const candidates = Array.isArray(auto.candidates) ? auto.candidates : [];
 
     if(auto.replacement){
@@ -871,6 +888,8 @@ cmdInput.addEventListener("keydown", (e)=>{
       tabState.source = "";
       tabState.index = -1;
       tabState.candidates = [];
+      tabState.kind = "";
+      tabState.activePrefix = "";
       e.preventDefault();
       return;
     }
@@ -882,6 +901,8 @@ cmdInput.addEventListener("keydown", (e)=>{
         tabState.source = cmdInput.value;
         tabState.index = 0;
         tabState.candidates = candidates.slice();
+        tabState.kind = auto.kind || "";
+        tabState.activePrefix = auto.activePrefix || "";
         const preview = candidates.slice(0, 12).join("   ");
         const suffix = candidates.length > 12 ? `   … +${candidates.length - 12} weitere` : "";
         row(`Tab-Kandidaten (${candidates.length}): ${preview}${suffix}`, "muted");
@@ -901,6 +922,8 @@ cmdInput.addEventListener("keydown", (e)=>{
     cmdInput._tabState.source = "";
     cmdInput._tabState.index = -1;
     cmdInput._tabState.candidates = [];
+    cmdInput._tabState.kind = "";
+    cmdInput._tabState.activePrefix = "";
   }
 });
 
