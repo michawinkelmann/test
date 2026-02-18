@@ -1304,9 +1304,18 @@ talk harries  /  talk pietsch`;
     if(!trimmed) return { ok:true, out:"" };
 
     const firstToken = trimmed.split(/\s+/, 1)[0];
-    if(state.npcDialog && state.npcDialog.active && firstToken !== "choose"){
-      resetNpcDialog();
-      saveState();
+    if(firstToken !== "choose"){
+      let changedDialogState = false;
+      if(state.npcDialog && state.npcDialog.active){
+        resetNpcDialog();
+        changedDialogState = true;
+      }
+      if(state.sidequest && state.sidequest.dialog === "winkelmann"){
+        state.sidequest.dialog = null;
+        state.sidequest.winkMenu = "main";
+        changedDialogState = true;
+      }
+      if(changedDialogState) saveState();
     }
 
     if(state.phase >= 3 && trimmed.startsWith("./")){
