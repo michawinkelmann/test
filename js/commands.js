@@ -3458,7 +3458,11 @@ const outText = (extra + open).trim();
         if(mode === "+x"){
           p.exec = true;
           p.mode = "755";
-          state.flags.exec_script = true;
+          // Phase-3-Quest "Script ausführbar machen" soll nur zählen,
+          // wenn exakt die Workbench-Kopie von patchlord.sh ausführbar gesetzt wird.
+          if(path === "/home/player/workbench/patchlord.sh"){
+            state.flags.exec_script = true;
+          }
           award("badge_chmod");
         } else if(mode.match(/^\d{3}$/)){
           p.mode = mode;
