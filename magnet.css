@@ -1,0 +1,20 @@
+:root {
+  color-scheme: light;
+}
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #dfeef3;
+  color: #1e2a38;
+}
+main {
+  max-width: 1000px;
+  margin: 16px auto;
+  padding: 0 12px;
+}
+canvas {
+  width: 100%;
+  height: auto;
+  border: 1px solid #9ab2c2;
+  background: #d8e8ee;
+}
